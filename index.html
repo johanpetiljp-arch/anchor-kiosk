@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anchor Lab & Medical Center Inc. - Queuing System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', Tahoma, Geneva, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f7fd 0%, #e6f2ff 100%);
+            color: #2c3e50;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #0d4d75 0%, #1a6fa0 100%);
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px 25px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .logo {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 5px;
+        }
+        
+        .logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .company-name {
+            text-align: left;
+        }
+        
+        .company-name h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin: 0;
+            line-height: 1.2;
+        }
+        
+        .company-name p {
+            font-size: 16px;
+            opacity: 0.9;
+            margin: 0;
+            font-weight: 300;
+        }
+        
+        .system-title {
+            font-size: 22px;
+            font-weight: 400;
+            margin-top: 15px;
+            color: #e6f7ff;
+            padding: 12px 25px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .login-section {
+            flex: 1;
+            min-width: 400px;
+            padding: 40px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .display-section {
+            flex: 1.2;
+            min-width: 400px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-left: 1px solid #e0e0e0;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+        
+        .login-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .login-logo .logo {
+            width: 150px;
+            height: 150px;
+            margin-right: 20px;
+        }
+        
+        .login-title {
+            font-size: 25px;
+            color: #1a6fa0;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .login-subtitle {
+            font-size: 16px;
+            color: #6c757d;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-group label i {
+            margin-right: 10px;
+            color: #1a6fa0;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 16px 16px 16px 50px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-group i.input-icon {
+            position: absolute;
+            left: 16px;
+            top: 44px;
+            color: #6c757d;
+            font-size: 20px;
+        }
+        
+        .form-group input:focus {
+            border-color: #4db8ff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(77, 184, 255, 0.2);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #1a6fa0 0%, #0d4d75 100%);
+            color: white;
+            border: none;
+            padding: 18px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 17px;
+            width: 100%;
+            transition: all 0.3s;
+            font-weight: 600;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        button i {
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .main-system {
+            display: none;
+            padding: 30px;
+        }
+        
+        .staff-panel, .display-panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            padding: 30px;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .panel-header i {
+            font-size: 24px;
+            color: #1a6fa0;
+            margin-right: 12px;
+            background: #e6f7ff;
+            padding: 12px;
+            border-radius: 10px;
+        }
+        
+        .panel-header h2 {
+            color: #1a6fa0;
+            font-size: 24px;
+            margin: 0;
+        }
+        
+        .service-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .service-btn {
+            background: linear-gradient(135deg, #e6f7ff 0%, #cce5ff 100%);
+            color: #1a6fa0;
+            border: 2px solid #4db8ff;
+            padding: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .service-btn i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #1a6fa0;
+        }
+        
+        .service-btn:hover, .service-btn.active {
+            background: linear-gradient(135deg, #4db8ff 0%, #1a6fa0 100%);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(77, 184, 255, 0.3);
+        }
+        
+        .service-btn:hover i, .service-btn.active i {
+            color: white;
+        }
+        
+        .queue-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 18px;
+        }
+        
+        .control-btn {
+            width: 48%;
+        }
+        
+        .start-btn {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+        }
+        
+        .next-btn {
+            background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
+        }
+        
+        .ticket-preview {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px dashed #4db8ff;
+            padding: 30px;
+            margin-top: 30px;
+            text-align: center;
+            border-radius: 12px;
+            transition: all 0.3s;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .ticket-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .ticket-logo {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+        
+        .ticket-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .ticket-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a6fa0;
+        }
+        
+        .ticket-number {
+            font-size: 52px;
+            font-weight: 800;
+            color: #e53935;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .ticket-service {
+            font-size: 22px;
+            color: #6c757d;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+        
+        .ticket-preview.printing {
+            transform: scale(1.02);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .display-screen {
+            background: linear-gradient(135deg, #1a6fa0 0%, #0d4d75 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .display-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .display-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .display-logo .logo {
+            width: 150px;
+            height: 150px;
+            margin-right: 12px;
+        }
+        
+        .display-title {
+            font-size: 35px;
+            font-weight: 700;
+            color: #ffcb05;
+        }
+        .display-subtitle {
+            font-size: 35px;
+            font-weight: 700;
+            color: #ffcb05;
+        }
+        
+        .current-number {
+            font-size: 90px;
+            font-weight: 800;
+            color: #ffcb05;
+            margin: 30px 0;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .current-service {
+            font-size: 30px;
+            color: #e6f7ff;
+        }
+        
+        .queue-list {
+            list-style: none;
+            margin-top: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .queue-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            border-left: 5px solid #4db8ff;
+        }
+        
+        .queue-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+        }
+        
+        .queue-number {
+            font-weight: 800;
+            font-size: 24px;
+            color: #1a6fa0;
+        }
+        
+        .queue-service {
+            color: #6c757d;
+            font-weight: 500;
+            font-size: 17px;
+        }
+        
+        .now-serving {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+            border-left: 5px solid #ff9800;
+        }
+        
+        .logout-btn {
+            background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);
+            max-width: 220px;
+            margin: 30px auto;
+            display: block;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 18px 24px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            color: white;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 1000;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .notification i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .instructions {
+            background: linear-gradient(135deg, #e6f7ff 0%, #cce5ff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 5px solid #4db8ff;
+        }
+        
+        .instructions h3 {
+            color: #1a6fa0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .instructions h3 i {
+            margin-right: 10px;
+        }
+        
+        .instructions ol {
+            padding-left: 30px;
+        }
+        
+        .instructions li {
+            margin-bottom: 12px;
+            color: #495057;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #6c757d;
+            font-size: 14px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        @media (max-width: 900px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .display-section {
+                border-left: none;
+                border-top: 1px solid #e0e0e0;
+            }
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .ticket-preview, .ticket-preview * {
+                visibility: visible;
+            }
+            .ticket-preview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                border: none;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <div class="logo">
+                    <!-- Replace with your logo image -->
+                    <img src="logo_anchor.png" alt="Anchor Lab & Medical Center Inc. Logo">
+                </div>
+                <div class="company-name">
+                    <h1>ANCHOR LAB & MEDICAL CENTER INC.</h1>
+                </div>
+            </div>
+            <div class="system-title">Patient Queuing</div>
+        </header>
+        
+        <div class="content">
+            <section class="login-section" id="loginSection">
+                <div class="login-header">
+                    <div class="login-logo">
+                        <div class="logo">
+                            <!-- Replace with your logo image -->
+                            <img src="logo_anchor.png" alt="Anchor Lab & Medical Center Inc. Logo">
+                        </div>
+                        <div>
+                            <div class="login-title">ANCHOR LAB &</div>
+                            <div class="login-title">MEDICAL CENTER INC.</div>
+                        </div>
+                    </div>
+                    <h2>Staff Login Portal</h2>
+                </div>
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="username" placeholder="Enter your username">
+                    <i class="fas fa-user input-icon"></i>
+                </div>
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="password" placeholder="Enter your password">
+                    <i class="fas fa-lock input-icon"></i>
+                </div>
+                <button id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login to System</button>
+            </section>
+            
+            <section class="display-section">
+                <div class="display-screen">
+                    <div class="display-header">
+                        <div class="display-logo">
+                            <div class="logo">
+                                <!-- Replace with your logo image -->
+                                <img src="logo_anchor.png" alt="Anchor Lab & Medical Center Inc. Logo">
+                            </div>
+                        </div>
+                        <div class="display-subtitle">ANCHOR LAB &</div>
+                        <div class="display-subtitle">MEDICAL CENTER INC.</div>
+                    </div>
+                    <h3>Now Serving</h3>
+                    <div class="current-number">--</div>
+                    <div class="current-service">Please wait for your number</div>
+                </div>
+                
+                <h3><i class="fas fa-clock"></i> Waiting Queue</h3>
+                <ul class="queue-list">
+                    <li class="queue-item">No patients in queue</li>
+                </ul>
+            </section>
+        </div>
+        
+        <section class="main-system" id="mainSystem">
+            <div class="staff-panel">
+                <div class="panel-header">
+                    <i class="fas fa-user-md"></i>
+                    <h2>Staff Control Panel</h2>
+                </div>
+                
+                <div class="instructions">
+                    <h3><i class="fas fa-info-circle"></i> How to Use the System:</h3>
+                    <ol>
+                        <li>Select a medical service from the options below</li>
+                        <li>Click "Start Queue" to begin the queuing process</li>
+                        <li>Click the ticket preview to print and add patient to queue</li>
+                        <li>Click "Next Patient" when ready to call the next person</li>
+                    </ol>
+                </div>
+                
+                <div class="service-buttons">
+                    <div class="service-btn" data-service="2D Echo"><i class="fas fa-heart"></i> 2D Echo</div>
+                    <div class="service-btn" data-service="X-Ray"><i class="fas fa-x-ray"></i> X-Ray</div>
+                    <div class="service-btn" data-service="Drug Test"><i class="fas fa-pills"></i> Drug Test</div>
+                    <div class="service-btn" data-service="Ultrasound"><i class="fas fa-baby"></i> Ultrasound</div>
+                    <div class="service-btn" data-service="Blood Test"><i class="fas fa-tint"></i> Blood Test</div>
+                    <div class="service-btn" data-service="ECG"><i class="fas fa-heartbeat"></i> ECG</div>
+                    <div class="service-btn" data-service="CT Scan"><i class="fas fa-brain"></i> CT Scan</div>
+                    <div class="service-btn" data-service="MRI"><i class="fas fa-magnet"></i> MRI</div>
+                </div>
+                
+                <div class="ticket-preview" id="ticketPreview">
+                    <div class="ticket-header">
+                        <div class="ticket-logo">
+                            <!-- Replace with your logo image -->
+                            <img src="logo_anchor.png" alt="Anchor Lab & Medical Center Inc. Logo">
+                        </div>
+                        <div class="ticket-title">ANCHOR LAB & MEDICAL CENTER INC.</div>
+                    </div>
+                    <h3>Patient Queue Ticket</h3>
+                    <div class="ticket-number" id="ticketNumber">--</div>
+                    <div class="ticket-service" id="ticketService">Please select a service</div>
+                </div>
+                
+                <div class="queue-controls">
+                    <button class="control-btn start-btn" id="startQueueBtn"><i class="fas fa-play-circle"></i> Start Queue</button>
+                    <button class="control-btn next-btn" id="nextBtn"><i class="fas fa-forward"></i> Next Patient</button>
+                </div>
+                
+                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+            
+            <div class="display-panel">
+                <div class="panel-header">
+                    <i class="fas fa-tv"></i>
+                    <h2>Patient Display Screen</h2>
+                </div>
+                
+                <div class="display-screen">
+                    <div class="display-header">
+                        <div class="display-logo">
+                            <div class="logo">
+                                <!-- Replace with your logo image -->
+                                <img src="logo_anchor.png" alt="Anchor Lab & Medical Center Inc. Logo">
+                            </div>
+                            <div class="display-title">ANCHOR LAB & MEDICAL CENTER INC.</div>
+                        </div>
+                    </div>
+                    <h3>Now Serving</h3>
+                    <div class="current-number" id="currentNumber">--</div>
+                    <div class="current-service" id="currentService">Please wait for your number</div>
+                </div>
+                
+                <h3><i class="fas fa-clock"></i> Waiting Queue</h3>
+                <ul class="queue-list" id="queueList">
+                    <li class="queue-item">No patients in queue</li>
+                </ul>
+            </div>
+        </section>
+
+        <div class="footer">
+            <p>© 2025 Anchor Lab & Medical Center Inc. - Patient Queuing v1.0</p>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span>Patient added to queue successfully!</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const loginSection = document.getElementById('loginSection');
+            const mainSystem = document.getElementById('mainSystem');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginBtn = document.getElementById('loginBtn');
+            const serviceButtons = document.querySelectorAll('.service-btn');
+            const ticketNumber = document.getElementById('ticketNumber');
+            const ticketService = document.getElementById('ticketService');
+            const ticketPreview = document.getElementById('ticketPreview');
+            const startQueueBtn = document.getElementById('startQueueBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const currentNumber = document.getElementById('currentNumber');
+            const currentService = document.getElementById('currentService');
+            const queueList = document.getElementById('queueList');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const notification = document.getElementById('notification');
+            
+            // System State
+            let isQueueStarted = false;
+            let queue = [];
+            let currentQueueNumber = 0;
+            let selectedService = null;
+            let lastService = null;
+            
+            // Staff credentials (in a real system, this would be handled server-side)
+            const staffCredentials = [
+                { username: 'staff1', password: 'pass1' },
+                { username: 'staff2', password: 'pass2' },
+                { username: 'admin', password: 'admin123' }
+            ];
+            
+            // Show notification
+            function showNotification(message, isError = false) {
+                notification.innerHTML = isError ? 
+                    '<i class="fas fa-exclamation-circle"></i><span>' + message + '</span>' :
+                    '<i class="fas fa-check-circle"></i><span>' + message + '</span>';
+                
+                notification.className = isError ? 'notification error show' : 'notification show';
+                
+                setTimeout(() => {
+                    notification.className = 'notification';
+                }, 3000);
+            }
+            
+            // Login functionality
+            loginBtn.addEventListener('click', function() {
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+                
+                const isValid = staffCredentials.some(
+                    cred => cred.username === username && cred.password === password
+                );
+                
+                if (isValid) {
+                    loginSection.style.display = 'none';
+                    document.querySelector('.content').style.display = 'none';
+                    mainSystem.style.display = 'block';
+                    showNotification('Login successful! Welcome to Anchor Lab System');
+                } else {
+                    showNotification('Invalid username or password. Please try again.', true);
+                }
+            });
+            
+            // Service selection
+            serviceButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    serviceButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    selectedService = this.getAttribute('data-service');
+                    lastService = selectedService;
+                    
+                    // Update ticket preview
+                    ticketService.textContent = selectedService;
+                    
+                    // Generate a queue number
+                    const nextNumber = currentQueueNumber + 1;
+                    ticketNumber.textContent = nextNumber.toString().padStart(3, '0');
+                });
+            });
+            
+            // Start queue
+            startQueueBtn.addEventListener('click', function() {
+                isQueueStarted = true;
+                startQueueBtn.textContent = ' Queue Started';
+                startQueueBtn.innerHTML = '<i class="fas fa-check-circle"></i> Queue Started';
+                startQueueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
+                showNotification('Queue has been started! Patients can now be added.');
+            });
+            
+            // Next patient
+            nextBtn.addEventListener('click', function() {
+                if (queue.length === 0) {
+                    currentNumber.textContent = '--';
+                    currentService.textContent = 'No patients in queue';
+                    showNotification('No patients in the queue', true);
+                    return;
+                }
+                
+                // Get the next patient in queue
+                const nextPatient = queue.shift();
+                
+                // Update display
+                currentNumber.textContent = nextPatient.number;
+                currentService.textContent = nextPatient.service;
+                
+                // Update queue list
+                updateQueueDisplay();
+                
+                showNotification('Now serving patient: ' + nextPatient.number);
+            });
+            
+            // Add to queue (when ticket is clicked)
+            ticketPreview.addEventListener('click', function() {
+                if (!selectedService && !lastService) {
+                    showNotification('Please select a medical service first.', true);
+                    return;
+                }
+                
+                // If no service selected but there was a previous service, use that
+                if (!selectedService && lastService) {
+                    selectedService = lastService;
+                    ticketService.textContent = selectedService;
+                    
+                    // Re-activate the last service button
+                    serviceButtons.forEach(btn => {
+                        if (btn.getAttribute('data-service') === lastService) {
+                            btn.classList.add('active');
+                        }
+                    });
+                }
+                
+                if (!isQueueStarted) {
+                    showNotification('Please start the queue first before adding patients.', true);
+                    return;
+                }
+                
+                const number = ticketNumber.textContent;
+                
+                // Add to queue
+                queue.push({
+                    number: number,
+                    service: selectedService
+                });
+                
+                // Visual feedback for printing
+                ticketPreview.classList.add('printing');
+                setTimeout(() => {
+                    ticketPreview.classList.remove('printing');
+                }, 500);
+                
+                // Update queue display
+                updateQueueDisplay();
+                
+                // Print ticket (simulated)
+                window.print();
+                
+                // Prepare for next ticket
+                currentQueueNumber++;
+                ticketNumber.textContent = (currentQueueNumber + 1).toString().padStart(3, '0');
+                
+                showNotification('Ticket ' + number + ' added to ' + selectedService + ' queue');
+            });
+            
+            // Update queue display
+            function updateQueueDisplay() {
+                if (queue.length === 0) {
+                    queueList.innerHTML = '<li class="queue-item">No patients in queue</li>';
+                    return;
+                }
+                
+                queueList.innerHTML = '';
+                
+                queue.forEach(patient => {
+                    const li = document.createElement('li');
+                    li.className = 'queue-item';
+                    li.innerHTML = `
+                        <span class="queue-number">${patient.number}</span>
+                        <span class="queue-service">${patient.service}</span>
+                    `;
+                    queueList.appendChild(li);
+                });
+            }
+            
+            // Logout functionality
+            logoutBtn.addEventListener('click', function() {
+                // Reset system state
+                isQueueStarted = false;
+                queue = [];
+                currentQueueNumber = 0;
+                selectedService = null;
+                lastService = null;
+                
+                // Clear displays
+                ticketNumber.textContent = '--';
+                ticketService.textContent = 'Please select a service';
+                currentNumber.textContent = '--';
+                currentService.textContent = 'Please wait for your number';
+                queueList.innerHTML = '<li class="queue-item">No patients in queue</li>';
+                
+                // Reset service buttons
+                serviceButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Reset start queue button
+                startQueueBtn.textContent = ' Start Queue';
+                startQueueBtn.innerHTML = '<i class="fas fa-play-circle"></i> Start Queue';
+                startQueueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
+                
+                // Clear login fields
+                usernameInput.value = '';
+                passwordInput.value = '';
+                
+                // Show login, hide main system
+                loginSection.style.display = 'block';
+                document.querySelector('.content').style.display = 'flex';
+                mainSystem.style.display = 'none';
+                
+                showNotification('Logged out successfully');
+            });
+        });
+    </script>
+</body>
+</html>
+    
