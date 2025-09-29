@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Anchor Lab & Medical Center Inc. - Queuing System</title>
     <link rel="icon" type="image/x-icon" href="logo_anchor.png">
-    <link rel="shortcut icon" type="image/x-icon" href="logo_anchor.png">
-    <link rel="apple-touch-icon" href="logo_anchor.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', Tahoma, Geneva, sans-serif; }
@@ -112,11 +110,14 @@
         .backup-controls { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
         .save-backup-btn { background:linear-gradient(135deg,#4caf50 0%,#2e7d32 100%); max-width: 200px; }
         .load-backup-btn { background:linear-gradient(135deg,#2196f3 0%,#0d47a1 100%); max-width: 200px; }
-        .date-selector { display: flex; gap: 15px; margin: 20px 0; align-items: center; }
+        .date-selector { display: flex; gap: 15px; margin: 20px 0; align-items: center; flex-wrap: wrap; }
         .date-selector label { font-weight: 600; color: #495057; }
         .date-selector input { padding: 10px; border: 2px solid #dee2e6; border-radius: 8px; }
         .backup-stats { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px; }
         .backup-stats h4 { color: #1a6fa0; margin-bottom: 10px; }
+        
+        /* Debug button */
+        .debug-btn { background:linear-gradient(135deg,#607d8b 0%,#37474f 100%); max-width: 200px; margin: 10px 0; }
         
         @media (max-width:900px) { .content { flex-direction:column; } .display-section { border-left:none; border-top:1px solid #e0e0e0; } }
         @media print { 
@@ -265,6 +266,8 @@
                 <button class="demographics-btn" id="demographicsBtn"><i class="fas fa-chart-bar"></i> View Demographics</button>
                 
                 <button class="backup-btn" id="backupBtn"><i class="fas fa-database"></i> Backup & Restore Data</button>
+                
+                <button class="debug-btn" id="debugBtn"><i class="fas fa-bug"></i> Debug Data (Console)</button>
 
                 <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
@@ -351,6 +354,12 @@
                         </button>
                         <button class="load-backup-btn" id="loadBackupBtn">
                             <i class="fas fa-folder-open"></i> Load Data
+                        </button>
+                        <button class="export-share-btn" id="exportShareBtn" style="background:linear-gradient(135deg,#9c27b0 0%,#6a1b9a 100%);">
+                            <i class="fas fa-share-alt"></i> Export Shared File
+                        </button>
+                        <button class="import-share-btn" id="importShareBtn" style="background:linear-gradient(135deg,#ff9800 0%,#e65100 100%);">
+                            <i class="fas fa-file-import"></i> Import Shared File
                         </button>
                     </div>
                     
@@ -448,6 +457,13 @@
             const totalPatientsSpan = document.getElementById('totalPatients');
             const servicesTodaySpan = document.getElementById('servicesToday');
             const lastBackupSpan = document.getElementById('lastBackup');
+            
+            // File sharing elements
+            const exportShareBtn = document.getElementById('exportShareBtn');
+            const importShareBtn = document.getElementById('importShareBtn');
+            
+            // Debug button
+            const debugBtn = document.getElementById('debugBtn');
 
             // Patient fields
             const patientNameInput = document.getElementById('patientName');
@@ -470,9 +486,22 @@
                 { username: 'admin', password: 'admin123' }
             ];
 
+            // Helper function to format date for input (YYYY-MM-DD)
+            function formatDateForInput(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            // Helper function to format date for display
+            function formatDateForDisplay(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US');
+            }
+
             // Initialize backup date to today
-            const today = new Date().toISOString().split('T')[0];
-            backupDateInput.value = today;
+            backupDateInput.value = formatDateForInput(new Date());
 
             // Voice announcement function (Web Speech API)
             function announce(text) {
@@ -531,6 +560,126 @@
                 document.body.removeChild(link);
                 
                 showNotification('Data downloaded successfully!');
+            }
+
+            // Save today's data to localStorage
+            function saveTodayData() {
+                const today = new Date();
+                const todayKey = formatDateForInput(today);
+                const dataToSave = {
+                    queue: queue,
+                    allPatients: allPatients,
+                    lastIssuedNumber: lastIssuedNumber,
+                    isQueueStarted: isQueueStarted,
+                    timestamp: new Date().toISOString()
+                };
+                
+                console.log('Saving data for date:', todayKey, dataToSave);
+                localStorage.setItem(`queueData_${todayKey}`, JSON.stringify(dataToSave));
+                updateBackupStats();
+                showNotification(`Data saved for ${formatDateForDisplay(todayKey)}`);
+            }
+
+            // Load today's data from localStorage
+            function loadTodayData() {
+                const today = new Date();
+                const todayKey = formatDateForInput(today);
+                loadDataForDate(todayKey);
+            }
+
+            // Load data for a specific date
+            function loadDataForDate(date) {
+                console.log('Loading data for date:', date);
+                
+                // Check if date is in correct format, if not try to parse it
+                let searchDate = date;
+                if (!date.includes('-')) {
+                    // If date is in MM/DD/YYYY format, convert to YYYY-MM-DD
+                    const dateParts = date.split('/');
+                    if (dateParts.length === 3) {
+                        searchDate = `${dateParts[2]}-${dateParts[0].padStart(2, '0')}-${dateParts[1].padStart(2, '0')}`;
+                    }
+                }
+                
+                const savedData = localStorage.getItem(`queueData_${searchDate}`);
+                console.log('Looking for key:', `queueData_${searchDate}`);
+                console.log('Found data:', savedData);
+                
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    
+                    // Update backup table
+                    backupTableBody.innerHTML = '';
+                    if (data.allPatients && data.allPatients.length > 0) {
+                        data.allPatients.forEach(patient => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${patient.number}</td>
+                                <td>${patient.name}</td>
+                                <td>${patient.age}</td>
+                                <td>${patient.gender}</td>
+                                <td>${patient.service}</td>
+                                <td>${patient.status || 'Unknown'}</td>
+                            `;
+                            backupTableBody.appendChild(row);
+                        });
+                        showNotification(`Data loaded for ${formatDateForDisplay(searchDate)} - ${data.allPatients.length} patients found`);
+                    } else {
+                        backupTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No data available for this date</td></tr>';
+                        showNotification('No patient data found for the selected date', true);
+                    }
+                } else {
+                    backupTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No data available for this date</td></tr>';
+                    showNotification('No data found for the selected date', true);
+                }
+                
+                updateBackupStats();
+            }
+
+            // Update backup statistics
+            function updateBackupStats() {
+                const today = new Date();
+                const todayKey = formatDateForInput(today);
+                const savedData = localStorage.getItem(`queueData_${todayKey}`);
+                
+                console.log('Updating stats for date:', todayKey);
+                
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    totalPatientsSpan.textContent = data.allPatients ? data.allPatients.length : 0;
+                    
+                    // Count unique services
+                    if (data.allPatients && data.allPatients.length > 0) {
+                        const services = new Set(data.allPatients.map(p => p.service));
+                        servicesTodaySpan.textContent = services.size;
+                    } else {
+                        servicesTodaySpan.textContent = 0;
+                    }
+                    
+                    lastBackupSpan.textContent = new Date(data.timestamp).toLocaleString();
+                } else {
+                    // Show current session data if no saved data
+                    totalPatientsSpan.textContent = allPatients.length;
+                    
+                    // Count unique services from current session
+                    const services = new Set(allPatients.map(p => p.service));
+                    servicesTodaySpan.textContent = services.size;
+                    
+                    lastBackupSpan.textContent = 'Never';
+                }
+            }
+
+            // Debug function to see all stored data
+            function debugStoredData() {
+                console.log('=== ALL STORED DATA ===');
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key.startsWith('queueData_')) {
+                        console.log(key, localStorage.getItem(key));
+                    }
+                }
+                console.log('=== END STORED DATA ===');
+                showNotification('Check browser console for stored data');
             }
 
             // Login
@@ -801,14 +950,14 @@
             // Save today's data
             saveBackupBtn.addEventListener('click', function() {
                 saveTodayData();
-                showNotification('Today\'s data saved successfully!');
-                updateBackupStats();
+                debugStoredData();
             });
             
             // Load data for selected date
             loadBackupBtn.addEventListener('click', function() {
                 const selectedDate = backupDateInput.value;
                 loadDataForDate(selectedDate);
+                debugStoredData();
             });
             
             // Print backup data
@@ -839,90 +988,78 @@
                 backupSection.style.display = 'none';
             });
             
-            // Save today's data to localStorage
-            function saveTodayData() {
-                const today = new Date().toISOString().split('T')[0];
-                const dataToSave = {
-                    queue: queue,
+            // Export data as shareable file
+            exportShareBtn.addEventListener('click', function() {
+                const today = new Date();
+                const todayKey = formatDateForInput(today);
+                const dataToExport = {
+                    date: todayKey,
                     allPatients: allPatients,
+                    queue: queue,
                     lastIssuedNumber: lastIssuedNumber,
                     isQueueStarted: isQueueStarted,
-                    timestamp: new Date().toISOString()
+                    exportedAt: new Date().toISOString(),
+                    system: "Anchor Lab Queuing System"
                 };
                 
-                localStorage.setItem(`queueData_${today}`, JSON.stringify(dataToSave));
-                updateBackupStats();
-            }
-            
-            // Load today's data from localStorage
-            function loadTodayData() {
-                const today = new Date().toISOString().split('T')[0];
-                loadDataForDate(today);
-            }
-            
-            // Load data for a specific date
-            function loadDataForDate(date) {
-                const savedData = localStorage.getItem(`queueData_${date}`);
+                const dataStr = JSON.stringify(dataToExport, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `anchor_lab_shared_data_${todayKey}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
                 
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    
-                    // Update backup table
-                    backupTableBody.innerHTML = '';
-                    if (data.allPatients && data.allPatients.length > 0) {
-                        data.allPatients.forEach(patient => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${patient.number}</td>
-                                <td>${patient.name}</td>
-                                <td>${patient.age}</td>
-                                <td>${patient.gender}</td>
-                                <td>${patient.service}</td>
-                                <td>${patient.status || 'Unknown'}</td>
-                            `;
-                            backupTableBody.appendChild(row);
-                        });
-                    } else {
-                        backupTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No data available for this date</td></tr>';
+                showNotification('Data exported as shareable file! Staff can import this file.');
+            });
+
+            // Import shared file
+            importShareBtn.addEventListener('click', function() {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.json';
+                fileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                const importedData = JSON.parse(e.target.result);
+                                
+                                // Validate the imported data
+                                if (importedData.allPatients && Array.isArray(importedData.allPatients)) {
+                                    if (confirm(`This will import ${importedData.allPatients.length} patients. Continue?`)) {
+                                        // Replace current data with imported data
+                                        allPatients = importedData.allPatients;
+                                        queue = importedData.queue || [];
+                                        lastIssuedNumber = importedData.lastIssuedNumber || 0;
+                                        isQueueStarted = importedData.isQueueStarted || false;
+                                        
+                                        // Update displays
+                                        updateQueueDisplay();
+                                        updateDemographicsTable();
+                                        saveTodayData();
+                                        
+                                        showNotification(`Successfully imported ${importedData.allPatients.length} patients from shared file`);
+                                    }
+                                } else {
+                                    showNotification('Invalid data file format', true);
+                                }
+                            } catch (error) {
+                                showNotification('Error reading file: ' + error.message, true);
+                            }
+                        };
+                        reader.readAsText(file);
                     }
-                    
-                    showNotification(`Data loaded for ${date}`);
-                } else {
-                    backupTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No data available for this date</td></tr>';
-                    showNotification('No data found for the selected date', true);
-                }
-                
-                updateBackupStats();
-            }
+                });
+                fileInput.click();
+            });
             
-            // Update backup statistics
-            function updateBackupStats() {
-                const today = new Date().toISOString().split('T')[0];
-                const savedData = localStorage.getItem(`queueData_${today}`);
-                
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    totalPatientsSpan.textContent = data.allPatients ? data.allPatients.length : 0;
-                    
-                    // Count unique services
-                    if (data.allPatients) {
-                        const services = new Set(data.allPatients.map(p => p.service));
-                        servicesTodaySpan.textContent = services.size;
-                    } else {
-                        servicesTodaySpan.textContent = 0;
-                    }
-                    
-                    lastBackupSpan.textContent = new Date(data.timestamp).toLocaleString();
-                } else {
-                    totalPatientsSpan.textContent = allPatients.length;
-                    
-                    // Count unique services
-                    const services = new Set(allPatients.map(p => p.service));
-                    servicesTodaySpan.textContent = services.size;
-                    
-                    lastBackupSpan.textContent = 'Never';
-                }
-            }
+            // Debug button
+            debugBtn.addEventListener('click', function() {
+                debugStoredData();
+            });
 
             // Logout
             logoutBtn.addEventListener('click', function() {
@@ -975,6 +1112,7 @@
             ticketService.textContent = 'Please select a service';
             ticketPatient.textContent = 'Patient: —';
             queueList.innerHTML = '<li class="queue-item">No patients in queue</li>';
+            updateBackupStats();
         });
     </script>
 </body>
