@@ -110,7 +110,6 @@
         .backup-controls { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
         .save-backup-btn { background:linear-gradient(135deg,#4caf50 0%,#2e7d32 100%); max-width: 200px; }
         .load-backup-btn { background:linear-gradient(135deg,#2196f3 0%,#0d47a1 100%); max-width: 200px; }
-        .complete-backup-btn { background:linear-gradient(135deg,#9c27b0 0%,#6a1b9a 100%); max-width: 200px; }
         .date-selector { display: flex; gap: 15px; margin: 20px 0; align-items: center; flex-wrap: wrap; }
         .date-selector label { font-weight: 600; color: #495057; }
         .date-selector input { padding: 10px; border: 2px solid #dee2e6; border-radius: 8px; }
@@ -258,7 +257,7 @@
                 <div class="instructions">
                     <h3><i class="fas fa-info-circle"></i> How to Use the System:</h3>
                     <ol>
-                        <li>Enter patient Name, Age, Gender, Contact, Address and Type first.</li>
+                        <li>Enter patient Name, Age and Gender first.</li>
                         <li>Select a medical service (this requires patient details).</li>
                         <li>Click the ticket preview to print and add the patient to the queue.</li>
                         <li>Click "Next Patient" when ready to call the next person.</li>
@@ -286,27 +285,6 @@
                             <option value="Other">Other</option>
                         </select>
                         <i class="fas fa-venus-mars input-icon"></i>
-                    </div>
-                    <div class="form-group">
-                        <label for="patientContact"><i class="fas fa-phone"></i> Contact Number</label>
-                        <input type="tel" id="patientContact" placeholder="Phone number">
-                        <i class="fas fa-phone input-icon"></i>
-                    </div>
-                    <div class="form-group">
-                        <label for="patientAddress"><i class="fas fa-home"></i> Address</label>
-                        <input type="text" id="patientAddress" placeholder="City/Municipality">
-                        <i class="fas fa-home input-icon"></i>
-                    </div>
-                    <div class="form-group">
-                        <label for="patientType"><i class="fas fa-user-tag"></i> Patient Type</label>
-                        <select id="patientType">
-                            <option value="">Select type</option>
-                            <option value="Walk-in">Walk-in</option>
-                            <option value="Appointment">Appointment</option>
-                            <option value="Referral">Referral</option>
-                            <option value="Emergency">Emergency</option>
-                        </select>
-                        <i class="fas fa-user-tag input-icon"></i>
                     </div>
                 </div>
 
@@ -391,9 +369,6 @@
                                 <th>Patient Name</th>
                                 <th>Age</th>
                                 <th>Gender</th>
-                                <th>Contact</th>
-                                <th>Address</th>
-                                <th>Type</th>
                                 <th>Service</th>
                                 <th>Status</th>
                             </tr>
@@ -434,9 +409,6 @@
                         <button class="load-backup-btn" id="loadBackupBtn">
                             <i class="fas fa-folder-open"></i> Load Data
                         </button>
-                        <button class="complete-backup-btn" id="completeBackupBtn">
-                            <i class="fas fa-database"></i> Complete Backup
-                        </button>
                         <button class="export-share-btn" id="exportShareBtn" style="background:linear-gradient(135deg,#9c27b0 0%,#6a1b9a 100%);">
                             <i class="fas fa-share-alt"></i> Export Shared File
                         </button>
@@ -464,9 +436,6 @@
                                 <th>Patient Name</th>
                                 <th>Age</th>
                                 <th>Gender</th>
-                                <th>Contact</th>
-                                <th>Address</th>
-                                <th>Type</th>
                                 <th>Service</th>
                                 <th>Status</th>
                             </tr>
@@ -492,7 +461,7 @@
         </section>
 
         <div class="footer">
-            <p>© 2025 Anchor Lab & Medical Center Inc. - Patient Queuing v1.1</p>
+            <p>© 2025 Anchor Lab & Medical Center Inc. - Patient Queuing v1.0</p>
         </div>
     </div>
 
@@ -534,7 +503,6 @@
             const backupSection = document.getElementById('backupSection');
             const saveBackupBtn = document.getElementById('saveBackupBtn');
             const loadBackupBtn = document.getElementById('loadBackupBtn');
-            const completeBackupBtn = document.getElementById('completeBackupBtn');
             const backupDateInput = document.getElementById('backupDate');
             const backupTableBody = document.getElementById('backupTableBody');
             const printBackupBtn = document.getElementById('printBackupBtn');
@@ -555,14 +523,11 @@
             const patientNameInput = document.getElementById('patientName');
             const patientAgeInput = document.getElementById('patientAge');
             const patientGenderSelect = document.getElementById('patientGender');
-            const patientContactInput = document.getElementById('patientContact');
-            const patientAddressInput = document.getElementById('patientAddress');
-            const patientTypeSelect = document.getElementById('patientType');
             const ticketPatient = document.getElementById('ticketPatient');
 
             // System State
             let isQueueStarted = false;
-            let queue = []; // will hold objects { number, service, name, age, gender, contact, address, patientType, status }
+            let queue = []; // will hold objects { number, service, name, age, gender, status }
             let allPatients = []; // will hold all patient objects for demographics
             let lastIssuedNumber = 0; // last assigned ticket number
             let selectedService = null;
@@ -591,124 +556,6 @@
 
             // Initialize backup date to today
             backupDateInput.value = formatDateForInput(new Date());
-
-            // Enhanced data structure
-            function getStructuredData() {
-                const today = new Date();
-                const todayKey = formatDateForInput(today);
-                
-                return {
-                    date: todayKey,
-                    queue: queue,
-                    allPatients: allPatients,
-                    lastIssuedNumber: lastIssuedNumber,
-                    isQueueStarted: isQueueStarted,
-                    settings: {
-                        services: ["2D Echo", "X-Ray", "Drug Test", "Ultrasound", "Blood Test", "ECG", "Dental", "CBC"],
-                        lastBackup: new Date().toISOString()
-                    },
-                    statistics: {
-                        totalPatients: allPatients.length,
-                        servedPatients: allPatients.filter(p => p.status === 'Served').length,
-                        waitingPatients: allPatients.filter(p => p.status === 'Waiting').length
-                    }
-                };
-            }
-
-            // Enhanced save function
-            function saveEnhancedData() {
-                const data = getStructuredData();
-                const todayKey = data.date;
-                
-                // Save to localStorage
-                localStorage.setItem(`queueData_${todayKey}`, JSON.stringify(data));
-                
-                // Also save to a master record
-                const masterData = JSON.parse(localStorage.getItem('anchorLabMasterData') || '{}');
-                masterData[todayKey] = data;
-                localStorage.setItem('anchorLabMasterData', JSON.stringify(masterData));
-                
-                console.log('Enhanced data saved for:', todayKey);
-                updateBackupStats();
-                return data;
-            }
-
-            // Complete backup function
-            function exportCompleteData() {
-                const masterData = JSON.parse(localStorage.getItem('anchorLabMasterData') || '{}');
-                const exportData = {
-                    exportDate: new Date().toISOString(),
-                    system: "Anchor Lab Queuing System",
-                    version: "1.1",
-                    data: masterData
-                };
-                
-                const dataStr = JSON.stringify(exportData, null, 2);
-                const blob = new Blob([dataStr], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `anchor_lab_complete_backup_${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-                URL.revokeObjectURL(url);
-                
-                showNotification('Complete data exported successfully!');
-            }
-
-            // Data recovery function
-            function attemptDataRecovery() {
-                console.log('Attempting data recovery...');
-                
-                // Check for master data first
-                const masterData = JSON.parse(localStorage.getItem('anchorLabMasterData') || '{}');
-                const todayKey = formatDateForInput(new Date());
-                
-                if (masterData[todayKey]) {
-                    const todayData = masterData[todayKey];
-                    queue = todayData.queue || [];
-                    allPatients = todayData.allPatients || [];
-                    lastIssuedNumber = todayData.lastIssuedNumber || 0;
-                    isQueueStarted = todayData.isQueueStarted || false;
-                    
-                    updateQueueDisplay();
-                    updateDemographicsTable();
-                    showNotification('Data recovered successfully!');
-                    return true;
-                }
-                
-                // Fallback to individual day storage
-                const savedData = localStorage.getItem(`queueData_${todayKey}`);
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    queue = data.queue || [];
-                    allPatients = data.allPatients || [];
-                    lastIssuedNumber = data.lastIssuedNumber || 0;
-                    isQueueStarted = data.isQueueStarted || false;
-                    
-                    updateQueueDisplay();
-                    updateDemographicsTable();
-                    showNotification('Data recovered from daily backup!');
-                    return true;
-                }
-                
-                showNotification('No previous data found to recover', true);
-                return false;
-            }
-
-            // Auto-save every 2 minutes
-            setInterval(() => {
-                if (isQueueStarted && allPatients.length > 0) {
-                    saveEnhancedData();
-                    console.log('Auto-saved data');
-                }
-            }, 120000);
-
-            // Save when window is about to close
-            window.addEventListener('beforeunload', () => {
-                if (isQueueStarted && allPatients.length > 0) {
-                    saveEnhancedData();
-                }
-            });
 
             // Voice announcement function (Web Speech API)
             function announce(text) {
@@ -771,8 +618,20 @@
 
             // Save today's data to localStorage
             function saveTodayData() {
-                const data = saveEnhancedData();
-                showNotification(`Data saved for ${formatDateForDisplay(data.date)}`);
+                const today = new Date();
+                const todayKey = formatDateForInput(today);
+                const dataToSave = {
+                    queue: queue,
+                    allPatients: allPatients,
+                    lastIssuedNumber: lastIssuedNumber,
+                    isQueueStarted: isQueueStarted,
+                    timestamp: new Date().toISOString()
+                };
+                
+                console.log('Saving data for date:', todayKey, dataToSave);
+                localStorage.setItem(`queueData_${todayKey}`, JSON.stringify(dataToSave));
+                updateBackupStats();
+                showNotification(`Data saved for ${formatDateForDisplay(todayKey)}`);
             }
 
             // Load today's data from localStorage
@@ -813,9 +672,6 @@
                                 <td>${patient.name}</td>
                                 <td>${patient.age}</td>
                                 <td>${patient.gender}</td>
-                                <td>${patient.contact || '-'}</td>
-                                <td>${patient.address || '-'}</td>
-                                <td>${patient.patientType || '-'}</td>
                                 <td>${patient.service}</td>
                                 <td>${patient.status || 'Unknown'}</td>
                             `;
@@ -823,11 +679,11 @@
                         });
                         showNotification(`Data loaded for ${formatDateForDisplay(searchDate)} - ${data.allPatients.length} patients found`);
                     } else {
-                        backupTableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No data available for this date</td></tr>';
+                        backupTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No data available for this date</td></tr>';
                         showNotification('No patient data found for the selected date', true);
                     }
                 } else {
-                    backupTableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No data available for this date</td></tr>';
+                    backupTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No data available for this date</td></tr>';
                     showNotification('No data found for the selected date', true);
                 }
                 
@@ -872,7 +728,7 @@
                 console.log('=== ALL STORED DATA ===');
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
-                    if (key.startsWith('queueData_') || key === 'anchorLabMasterData') {
+                    if (key.startsWith('queueData_')) {
                         console.log(key, localStorage.getItem(key));
                     }
                 }
@@ -891,8 +747,8 @@
                     mainSystem.style.display = 'block';
                     showNotification('Login successful! Welcome to Anchor Lab System');
                     
-                    // Attempt to recover data
-                    setTimeout(attemptDataRecovery, 500);
+                    // Load any saved data for today
+                    loadTodayData();
                 } else {
                     showNotification('Invalid username or password. Please try again.', true);
                 }
@@ -1003,10 +859,6 @@
                 const name = patientNameInput.value.trim();
                 const age = patientAgeInput.value.trim();
                 const gender = patientGenderSelect.value;
-                const contact = patientContactInput.value.trim();
-                const address = patientAddressInput.value.trim();
-                const patientType = patientTypeSelect.value;
-                
                 if (!name || !age || isNaN(age) || Number(age) < 0 || !gender) {
                     showNotification('Please fill valid patient Name, Age and Gender before adding.', true);
                     return;
@@ -1020,17 +872,13 @@
                 // Number to assign is next after lastIssuedNumber
                 const number = String(lastIssuedNumber + 1).padStart(3, '0');
 
-                // Create patient object with enhanced data
+                // Create patient object
                 const patient = {
                     number: number,
                     service: selectedService || lastService,
                     name: name,
                     age: age,
                     gender: gender,
-                    contact: contact,
-                    address: address,
-                    patientType: patientType,
-                    timestamp: new Date().toISOString(),
                     status: 'Waiting'
                 };
 
@@ -1144,9 +992,6 @@
                 patientNameInput.value = '';
                 patientAgeInput.value = '';
                 patientGenderSelect.value = '';
-                patientContactInput.value = '';
-                patientAddressInput.value = '';
-                patientTypeSelect.value = '';
 
                 // Update ticket preview to show NEXT available ticket - FIXED
                 // Keep the service selected but show the next ticket number
@@ -1215,7 +1060,7 @@
                 demographicsTableBody.innerHTML = '';
                 
                 if (allPatients.length === 0) {
-                    demographicsTableBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No patient data available</td></tr>';
+                    demographicsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No patient data available</td></tr>';
                     return;
                 }
                 
@@ -1226,9 +1071,6 @@
                         <td>${patient.name}</td>
                         <td>${patient.age}</td>
                         <td>${patient.gender}</td>
-                        <td>${patient.contact || '-'}</td>
-                        <td>${patient.address || '-'}</td>
-                        <td>${patient.patientType || '-'}</td>
                         <td>${patient.service}</td>
                         <td>${patient.status}</td>
                     `;
@@ -1271,11 +1113,6 @@
                 const selectedDate = backupDateInput.value;
                 loadDataForDate(selectedDate);
                 debugStoredData();
-            });
-            
-            // Complete backup
-            completeBackupBtn.addEventListener('click', function() {
-                exportCompleteData();
             });
             
             // Print backup data
@@ -1416,9 +1253,6 @@
                 patientNameInput.value = '';
                 patientAgeInput.value = '';
                 patientGenderSelect.value = '';
-                patientContactInput.value = '';
-                patientAddressInput.value = '';
-                patientTypeSelect.value = '';
 
                 // Show login, hide main system
                 loginSection.style.display = 'block';
