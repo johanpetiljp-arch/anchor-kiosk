@@ -121,7 +121,7 @@
         
         @media (max-width:900px) { .content { flex-direction:column; } .display-section { border-left:none; border-top:1px solid #e0e0e0; } }
         
-        /* PAPER ROLL PRINTING STYLES - ADDED FOR PAPER ROLL PRINTING */
+        /* ROLL PAPER PRINTING STYLES - UPDATED FOR ROLL PAPER QUEUE TICKETS */
         @media print { 
             body * { visibility:hidden; } 
             .ticket-preview, .ticket-preview * { visibility:visible; } 
@@ -130,7 +130,7 @@
                 left: 0; 
                 top: 0; 
                 width: 80mm !important; /* Standard receipt paper width */
-                min-height: 100mm !important;
+                min-height: 120mm !important; /* Increased height for queue ticket */
                 border: none !important; 
                 box-shadow: none !important;
                 margin: 0 !important;
@@ -138,6 +138,7 @@
                 background: white !important;
                 font-size: 12px !important;
                 transform: scale(1) !important;
+                font-family: 'Courier New', monospace !important; /* Better for thermal printers */
             }
             .ticket-header {
                 flex-direction: column !important;
@@ -145,29 +146,64 @@
                 margin-bottom: 8px !important;
             }
             .ticket-logo {
-                width: 60px !important;
-                height: 60px !important;
+                width: 50px !important; /* Smaller logo for roll paper */
+                height: 50px !important;
                 margin: 0 auto 5px !important;
             }
             .ticket-title {
                 font-size: 14px !important;
                 font-weight: bold !important;
                 line-height: 1.2 !important;
+                margin-bottom: 5px !important;
             }
             .ticket-preview h3 {
                 font-size: 13px !important;
                 margin: 5px 0 !important;
+                border-bottom: 1px dashed #000 !important;
+                padding-bottom: 5px !important;
             }
             .ticket-number {
-                font-size: 32px !important;
-                margin: 10px 0 !important;
+                font-size: 42px !important; /* Larger number for queue ticket */
+                margin: 15px 0 !important;
+                font-weight: bold !important;
+                color: #000 !important; /* Black for better thermal printing */
             }
             .ticket-service {
-                font-size: 16px !important;
+                font-size: 18px !important;
                 margin-bottom: 8px !important;
+                font-weight: bold !important;
             }
             .ticket-patient {
                 font-size: 12px !important;
+                margin-bottom: 5px !important;
+            }
+            
+            /* Add barcode area for queue systems */
+            .barcode-area {
+                margin: 10px 0 !important;
+                text-align: center !important;
+                border-top: 1px dashed #000 !important;
+                padding-top: 10px !important;
+            }
+            .barcode-placeholder {
+                height: 40px !important;
+                border: 1px solid #ccc !important;
+                margin: 5px auto !important;
+                width: 80% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 10px !important;
+                color: #666 !important;
+            }
+            
+            /* Footer with date and time */
+            .ticket-footer {
+                font-size: 10px !important;
+                text-align: center !important;
+                margin-top: 10px !important;
+                border-top: 1px dashed #000 !important;
+                padding-top: 8px !important;
             }
             
             /* Hide demographics panel when printing ticket */
@@ -540,6 +576,18 @@
                 { username: 'admin', password: 'admin123' }
             ];
 
+            // Room mapping for services - ADDED FOR ROOM ANNOUNCEMENTS
+            const serviceRooms = {
+                "2D Echo": "Room 1",
+                "X-Ray": "Room 2",
+                "Drug Test": "Room 3",
+                "Ultrasound": "Room 4",
+                "Blood Test": "Room 5",
+                "ECG": "Room 6",
+                "Dental": "Room 3",
+                "CBC": "Room 5"
+            };
+
             // Helper function to format date for input (YYYY-MM-DD)
             function formatDateForInput(date) {
                 const year = date.getFullYear();
@@ -557,7 +605,7 @@
             // Initialize backup date to today
             backupDateInput.value = formatDateForInput(new Date());
 
-            // Voice announcement function (Web Speech API)
+            // Voice announcement function (Web Speech API) - UPDATED WITH ROOMS
             function announce(text) {
                 if (!('speechSynthesis' in window)) {
                     console.warn('Speech Synthesis not supported in this browser.');
@@ -813,7 +861,7 @@
                 saveTodayData();
             });
 
-            // Next patient (call)
+            // Next patient (call) - UPDATED WITH ROOM ANNOUNCEMENTS
             nextBtn.addEventListener('click', function() {
                 if (queue.length === 0) {
                     currentNumber.textContent = '--';
@@ -842,12 +890,13 @@
                 // Save data after serving patient
                 saveTodayData();
 
-                // Voice announcement (convert padded number to numeric)
+                // Voice announcement with room number - UPDATED WITH ROOM
                 const spokenNumber = parseInt(nextPatient.number, 10) || nextPatient.number;
-                announce(`Patient number ${spokenNumber}, please proceed to room 1. Thank you`);
+                const room = serviceRooms[nextPatient.service] || "Room 1"; // Default to Room 1 if service not found
+                announce(`Patient number ${spokenNumber}, ${nextPatient.service}, please proceed to ${room}. Thank you`);
             });
 
-            // Add to queue when ticket preview clicked - MODIFIED FOR PAPER ROLL PRINTING
+            // Add to queue when ticket preview clicked - UPDATED FOR ROLL PAPER PRINTING
             ticketPreview.addEventListener('click', function() {
                 // ensure a service selected (or lastService exists)
                 if (!selectedService && !lastService) {
@@ -889,66 +938,89 @@
                 // Visual feedback for printing
                 ticketPreview.classList.add('printing');
                 
-                // CREATE PAPER ROLL PRINTING WINDOW - ADDED FOR PAPER ROLL PRINTING
+                // CREATE ROLL PAPER PRINTING WINDOW - UPDATED FOR QUEUE TICKETS
                 const printWindow = window.open('', '_blank');
                 printWindow.document.write(`
                     <!DOCTYPE html>
                     <html>
                     <head>
-                        <title>Print Ticket</title>
+                        <title>Print Queue Ticket</title>
                         <style>
                             body { 
                                 margin: 0; 
-                                padding: 5mm; 
+                                padding: 3mm; 
                                 font-family: 'Courier New', monospace;
                                 width: 80mm;
                                 font-size: 12px;
+                                line-height: 1.2;
                             }
                             .ticket-header {
                                 text-align: center;
-                                margin-bottom: 8px;
+                                margin-bottom: 5px;
                             }
                             .ticket-logo img {
-                                max-width: 60px;
-                                max-height: 60px;
+                                max-width: 50px;
+                                max-height: 50px;
                             }
                             .ticket-title {
-                                font-size: 14px;
+                                font-size: 12px;
                                 font-weight: bold;
                                 line-height: 1.2;
+                                margin-bottom: 5px;
                             }
                             h3 {
-                                font-size: 13px;
-                                margin: 5px 0;
+                                font-size: 11px;
+                                margin: 3px 0;
                                 text-align: center;
+                                border-bottom: 1px dashed #000;
+                                padding-bottom: 5px;
                             }
                             .ticket-number {
-                                font-size: 32px;
+                                font-size: 42px;
                                 font-weight: bold;
                                 text-align: center;
-                                margin: 10px 0;
-                                color: #e53935;
+                                margin: 15px 0;
+                                color: #000;
                             }
                             .ticket-service {
-                                font-size: 16px;
+                                font-size: 18px;
                                 text-align: center;
-                                margin-bottom: 8px;
+                                margin-bottom: 5px;
                                 font-weight: bold;
                             }
                             .ticket-patient {
-                                font-size: 12px;
+                                font-size: 10px;
                                 text-align: center;
+                                margin-bottom: 5px;
+                            }
+                            .barcode-area {
+                                margin: 10px 0;
+                                text-align: center;
+                                border-top: 1px dashed #000;
+                                padding-top: 10px;
+                            }
+                            .barcode-placeholder {
+                                height: 40px;
+                                border: 1px solid #ccc;
+                                margin: 5px auto;
+                                width: 80%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 10px;
+                                color: #666;
+                            }
+                            .ticket-footer {
+                                font-size: 9px;
+                                text-align: center;
+                                margin-top: 10px;
+                                border-top: 1px dashed #000;
+                                padding-top: 8px;
                             }
                             hr {
                                 border: none;
                                 border-top: 1px dashed #000;
-                                margin: 10px 0;
-                            }
-                            .footer {
-                                text-align: center;
-                                font-size: 10px;
-                                margin-top: 15px;
-                                color: #666;
+                                margin: 5px 0;
                             }
                         </style>
                     </head>
@@ -960,13 +1032,15 @@
                             <div class="ticket-title">ANCHOR LAB & MEDICAL CENTER INC.</div>
                         </div>
                         <hr>
-                        <h3>Patient Queue Ticket</h3>
+                        <h3>QUEUE TICKET</h3>
                         <div class="ticket-number">${number}</div>
                         <div class="ticket-service">${selectedService || lastService}</div>
                         <div class="ticket-patient">Patient: ${name}</div>
                         <div class="ticket-patient">Age: ${age} yrs | Gender: ${gender}</div>
-                        <hr>
-                        <div class="footer">
+                        <div class="barcode-area">
+                            <div class="barcode-placeholder">BARCODE AREA</div>
+                        </div>
+                        <div class="ticket-footer">
                             Please wait for your number to be called<br>
                             ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         </div>
@@ -975,10 +1049,13 @@
                 `);
                 printWindow.document.close();
                 
-                // Wait for content to load then print - ADDED FOR PAPER ROLL PRINTING
+                // Wait for content to load then print - UPDATED FOR ROLL PAPER
                 setTimeout(() => {
                     printWindow.print();
-                    printWindow.close();
+                    // Don't close immediately to ensure print dialog is handled
+                    setTimeout(() => {
+                        printWindow.close();
+                    }, 500);
                 }, 250);
 
                 setTimeout(() => { 
@@ -993,8 +1070,7 @@
                 patientAgeInput.value = '';
                 patientGenderSelect.value = '';
 
-                // Update ticket preview to show NEXT available ticket - FIXED
-                // Keep the service selected but show the next ticket number
+                // Update ticket preview to show NEXT available ticket
                 ticketNumber.textContent = String(lastIssuedNumber + 1).padStart(3, '0');
                 
                 // Keep the service displayed if one is selected
