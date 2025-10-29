@@ -325,7 +325,6 @@
             text-align:center; 
             margin-bottom:30px; 
             box-shadow:0 12px 24px rgba(0,0,0,0.2); 
-            /* FIX: Ensure display fits properly */
             min-height: 300px;
             display: flex;
             flex-direction: column;
@@ -357,6 +356,11 @@
         .current-service { 
             font-size:30px; 
             color:#e6f7ff; 
+            margin-bottom: 10px;
+        }
+        .current-patient {
+            font-size: 24px;
+            color: #e6f7ff;
         }
         .queue-list { 
             list-style:none; 
@@ -469,11 +473,45 @@
             margin-bottom:0; 
         }
         
-        /* TV Display Button */
-        .tv-display-btn { 
-            background:linear-gradient(135deg,#9c27b0 0%,#6a1b9a 100%); 
-            max-width: 280px; 
-            margin: 20px 0; 
+        /* Daily Stats Panel */
+        .daily-stats { 
+            background:linear-gradient(135deg,#e6f7ff 0%,#cce5ff 100%); 
+            padding:20px; 
+            border-radius:10px; 
+            margin-bottom:25px; 
+            border-left:5px solid #4db8ff; 
+        }
+        .daily-stats h3 { 
+            color:#1a6fa0; 
+            margin-bottom:15px; 
+            display:flex; 
+            align-items:center; 
+        }
+        .daily-stats h3 i { 
+            margin-right:10px; 
+        }
+        .stats-grid { 
+            display:grid; 
+            grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); 
+            gap:15px; 
+            margin-top:15px; 
+        }
+        .stat-item { 
+            background:white; 
+            padding:15px; 
+            border-radius:8px; 
+            text-align:center; 
+            box-shadow:0 2px 5px rgba(0,0,0,0.1); 
+        }
+        .stat-value { 
+            font-size:24px; 
+            font-weight:700; 
+            color:#1a6fa0; 
+            margin-bottom:5px; 
+        }
+        .stat-label { 
+            font-size:14px; 
+            color:#6c757d; 
         }
         
         /* Demographics Section */
@@ -730,7 +768,7 @@
             .current-number {
                 font-size: 60px;
             }
-            .current-service {
+            .current-service, .current-patient {
                 font-size: 20px;
             }
         }
@@ -814,6 +852,7 @@
                     <h3>Now Serving</h3>
                     <div class="current-number" id="publicCurrentNumber">--</div>
                     <div class="current-service" id="publicCurrentService">Please wait for your number</div>
+                    <div class="current-patient" id="publicCurrentPatient"></div>
                 </div>
 
                 <h3><i class="fas fa-clock"></i> Waiting Queue</h3>
@@ -828,6 +867,29 @@
                 <div class="panel-header">
                     <i class="fas fa-user-md"></i>
                     <h2>Staff Control Panel</h2>
+                </div>
+
+                <!-- Daily Stats Panel -->
+                <div class="daily-stats">
+                    <h3><i class="fas fa-chart-line"></i> Today's Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="todayPatientCount">0</div>
+                            <div class="stat-label">Patients Today</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="todayServicesCount">0</div>
+                            <div class="stat-label">Services Today</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="servedTodayCount">0</div>
+                            <div class="stat-label">Served Today</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="waitingCount">0</div>
+                            <div class="stat-label">Waiting Now</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="instructions">
@@ -893,9 +955,6 @@
                     <button class="control-btn next-btn" id="nextBtn"><i class="fas fa-forward"></i> Next Patient</button>
                 </div>
 
-                <!-- TV Display Button -->
-                <button class="tv-display-btn" id="tvDisplayBtn"><i class="fas fa-tv"></i> Open TV Display</button>
-
                 <button class="demographics-btn" id="demographicsBtn"><i class="fas fa-chart-bar"></i> View Demographics</button>
                 
                 <button class="backup-btn" id="backupBtn"><i class="fas fa-database"></i> Backup & Restore Data</button>
@@ -923,6 +982,7 @@
                     <h3>Now Serving</h3>
                     <div class="current-number" id="currentNumber">--</div>
                     <div class="current-service" id="currentService">Please wait for your number</div>
+                    <div class="current-patient" id="currentPatient"></div>
                 </div>
 
                 <h3><i class="fas fa-clock"></i> Waiting Queue</h3>
@@ -950,6 +1010,7 @@
                                 <th>Gender</th>
                                 <th>Service</th>
                                 <th>Status</th>
+                                <th>Date</th>
                             </tr>
                         </thead>
                         <tbody id="demographicsTableBody">
@@ -1011,6 +1072,7 @@
                                 <th>Gender</th>
                                 <th>Service</th>
                                 <th>Status</th>
+                                <th>Date</th>
                             </tr>
                         </thead>
                         <tbody id="backupTableBody">
@@ -1081,6 +1143,7 @@
             const nextBtn = document.getElementById('nextBtn');
             const currentNumber = document.getElementById('currentNumber');
             const currentService = document.getElementById('currentService');
+            const currentPatient = document.getElementById('currentPatient');
             const queueList = document.getElementById('queueListDisplay');
             const logoutBtn = document.getElementById('logoutBtn');
             const notification = document.getElementById('notification');
@@ -1089,10 +1152,14 @@
             // Public display elements
             const publicCurrentNumber = document.getElementById('publicCurrentNumber');
             const publicCurrentService = document.getElementById('publicCurrentService');
+            const publicCurrentPatient = document.getElementById('publicCurrentPatient');
             const publicQueueList = document.getElementById('publicQueueList');
             
-            // TV Display button
-            const tvDisplayBtn = document.getElementById('tvDisplayBtn');
+            // Daily Stats elements
+            const todayPatientCount = document.getElementById('todayPatientCount');
+            const todayServicesCount = document.getElementById('todayServicesCount');
+            const servedTodayCount = document.getElementById('servedTodayCount');
+            const waitingCount = document.getElementById('waitingCount');
             
             // Demographics elements
             const demographicsBtn = document.getElementById('demographicsBtn');
@@ -1127,21 +1194,23 @@
 
             // System State
             let isQueueStarted = false;
-            let queue = []; // will hold objects { number, service, name, age, gender, status }
-            let allPatients = []; // will hold all patient objects for demographics
-            let lastIssuedNumber = 0; // last assigned ticket number
+            let queue = [];
+            let allPatients = []; // All historical patients
+            let todayPatients = []; // Patients for today only
+            let lastIssuedNumber = 0;
             let selectedService = null;
             let lastService = null;
-            let tvDisplayWindow = null;
+            let currentServingPatient = null;
+            let currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
-            // Staff credentials (in a real system, this would be handled server-side)
+            // Staff credentials
             const staffCredentials = [
                 { username: 'staff1', password: 'pass1' },
                 { username: 'staff2', password: 'pass2' },
                 { username: 'admin', password: 'admin123' }
             ];
 
-            // Room mapping for services - ADDED FOR ROOM ANNOUNCEMENTS
+            // Room mapping for services
             const serviceRooms = {
                 "2D Echo": "Room 1",
                 "X-Ray": "Room 2",
@@ -1157,13 +1226,104 @@
             const queueRef = database.ref('queue');
             const systemRef = database.ref('system');
 
+            // NEW: Check if it's a new day and reset numbering if needed
+            function checkAndResetDailyNumbering() {
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Check if we already have data for today
+                systemRef.child('currentDate').once('value').then((snapshot) => {
+                    const storedDate = snapshot.val();
+                    
+                    if (storedDate !== today) {
+                        // It's a new day! Reset the numbering
+                        console.log('New day detected! Resetting numbering...');
+                        lastIssuedNumber = 0;
+                        queue = [];
+                        todayPatients = [];
+                        isQueueStarted = false;
+                        currentServingPatient = null;
+                        
+                        // Update Firebase with new date and reset data
+                        systemRef.set({
+                            currentDate: today,
+                            lastIssuedNumber: 0
+                        });
+                        
+                        // Also update the queue data
+                        saveToFirebase();
+                        
+                        showNotification('New day started! Numbering reset to 1.');
+                    } else {
+                        // Load the last issued number for today
+                        systemRef.child('lastIssuedNumber').once('value').then((numSnapshot) => {
+                            lastIssuedNumber = numSnapshot.val() || 0;
+                            updateTicketPreview();
+                        });
+                    }
+                });
+            }
+
+            // Test Firebase connection
+            function testFirebaseConnection() {
+                console.log('Testing Firebase connection...');
+                
+                const testRef = database.ref('connectionTest');
+                const testData = {
+                    test: 'connection',
+                    timestamp: Date.now(),
+                    message: 'Testing if Firebase is working'
+                };
+                
+                testRef.set(testData)
+                    .then(() => {
+                        console.log('✓ Firebase connection test: SUCCESS');
+                        showNotification('Firebase connection successful!', false);
+                        
+                        // Clean up test data
+                        setTimeout(() => {
+                            testRef.remove();
+                        }, 2000);
+                    })
+                    .catch((error) => {
+                        console.error('✗ Firebase connection test: FAILED', error);
+                        showNotification('Firebase connection failed: ' + error.message, true);
+                    });
+            }
+
+            // Improved saveToFirebase function with better error handling
+            function saveToFirebase() {
+                const dataToSave = {
+                    queue: queue,
+                    allPatients: allPatients,
+                    todayPatients: todayPatients,
+                    lastIssuedNumber: lastIssuedNumber,
+                    isQueueStarted: isQueueStarted,
+                    currentServingPatient: currentServingPatient,
+                    timestamp: new Date().toISOString()
+                };
+                
+                console.log('Saving to Firebase:', dataToSave);
+                
+                queueRef.set(dataToSave)
+                    .then(() => {
+                        console.log('✓ Data saved to Firebase successfully');
+                        
+                        // Also save the current lastIssuedNumber to system node
+                        systemRef.child('lastIssuedNumber').set(lastIssuedNumber);
+                    })
+                    .catch((error) => {
+                        console.error('✗ Error saving to Firebase:', error);
+                        showNotification('Error saving data to cloud: ' + error.message, true);
+                    });
+            }
+
             // Firebase Connection Status
             database.ref('.info/connected').on('value', function(snap) {
                 if (snap.val() === true) {
-                    connectionStatus.innerHTML = '<i class="fas fa-wifi"></i><span>Connected</span>';
+                    connectionStatus.innerHTML = '<i class="fas fa-wifi"></i><span>Connected to Cloud</span>';
                     connectionStatus.className = 'connection-status connected';
                 } else {
-                    connectionStatus.innerHTML = '<i class="fas fa-wifi-slash"></i><span>Offline</span>';
+                    connectionStatus.innerHTML = '<i class="fas fa-wifi-slash"></i><span>Offline - Cloud Disconnected</span>';
                     connectionStatus.className = 'connection-status disconnected';
                 }
             });
@@ -1171,16 +1331,20 @@
             // Listen for real-time queue updates from Firebase
             queueRef.on('value', function(snapshot) {
                 const data = snapshot.val();
+                console.log('Firebase data received:', data);
+                
                 if (data) {
                     queue = data.queue || [];
                     allPatients = data.allPatients || [];
+                    todayPatients = data.todayPatients || [];
                     lastIssuedNumber = data.lastIssuedNumber || 0;
                     isQueueStarted = data.isQueueStarted || false;
+                    currentServingPatient = data.currentServingPatient || null;
                     
-                    // Update UI
-                    updateQueueDisplay();
-                    updatePublicDisplay();
+                    // Update ALL displays
+                    updateAllDisplays();
                     updateTicketPreview();
+                    updateDailyStats();
                     
                     // Update staff panel if logged in
                     if (mainSystem.style.display === 'block') {
@@ -1189,59 +1353,77 @@
                 }
             });
 
-            // Update ticket preview based on current state
-            function updateTicketPreview() {
-                if (selectedService || lastService) {
-                    ticketService.textContent = selectedService || lastService;
-                    ticketNumber.textContent = String(lastIssuedNumber + 1).padStart(3, '0');
-                } else {
-                    ticketNumber.textContent = '--';
-                    ticketService.textContent = 'Please select a service';
-                }
+            // NEW: Update daily statistics
+            function updateDailyStats() {
+                // Count patients for today
+                todayPatientCount.textContent = todayPatients.length;
+                
+                // Count unique services for today
+                const todayServices = new Set(todayPatients.map(p => p.service));
+                todayServicesCount.textContent = todayServices.size;
+                
+                // Count served patients for today
+                const servedToday = todayPatients.filter(p => p.status === 'Served').length;
+                servedTodayCount.textContent = servedToday;
+                
+                // Count waiting patients
+                waitingCount.textContent = queue.length;
             }
 
-            // Update queue controls based on system state
-            function updateQueueControls() {
-                if (isQueueStarted) {
-                    startQueueBtn.textContent = ' Queue Started';
-                    startQueueBtn.innerHTML = '<i class="fas fa-check-circle"></i> Queue Started';
-                    startQueueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
-                } else {
-                    startQueueBtn.textContent = ' Start Queue';
-                    startQueueBtn.innerHTML = '<i class="fas fa-play-circle"></i> Start Queue';
-                    startQueueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
-                }
+            // Update ALL displays at once
+            function updateAllDisplays() {
+                updatePublicDisplay();
+                updateStaffDisplay();
+                updateQueueLists();
             }
 
-            // FIX: Improved display update function
+            // Update public display - NOW ONLY SHOWS WHEN NEXT PATIENT IS CLICKED
             function updatePublicDisplay() {
-                if (queue.length > 0) {
-                    const currentPatient = queue[0];
-                    publicCurrentNumber.textContent = currentPatient.number;
-                    publicCurrentService.textContent = currentPatient.service;
+                if (currentServingPatient) {
+                    console.log('Updating public display with current serving:', currentServingPatient);
                     
-                    // Update staff display too
-                    currentNumber.textContent = currentPatient.number;
-                    currentService.textContent = currentPatient.service + (currentPatient.name ? ' — ' + currentPatient.name : '');
+                    publicCurrentNumber.textContent = currentServingPatient.number;
+                    publicCurrentService.textContent = currentServingPatient.service;
+                    publicCurrentPatient.textContent = `${currentServingPatient.name} • ${currentServingPatient.age} yrs • ${currentServingPatient.gender}`;
                 } else {
                     publicCurrentNumber.textContent = '--';
                     publicCurrentService.textContent = 'Please wait for your number';
+                    publicCurrentPatient.textContent = '';
+                }
+            }
+
+            // Update staff display - NOW ONLY SHOWS WHEN NEXT PATIENT IS CLICKED
+            function updateStaffDisplay() {
+                if (currentServingPatient) {
+                    console.log('Updating staff display with current serving:', currentServingPatient);
+                    
+                    currentNumber.textContent = currentServingPatient.number;
+                    currentService.textContent = currentServingPatient.service;
+                    currentPatient.textContent = `${currentServingPatient.name} • ${currentServingPatient.age} yrs • ${currentServingPatient.gender}`;
+                } else {
                     currentNumber.textContent = '--';
                     currentService.textContent = 'No patients in queue';
+                    currentPatient.textContent = '';
                 }
-                
-                // Update public queue list
-                updatePublicQueueList();
             }
-            
-            // FIX: Update public queue list
-            function updatePublicQueueList() {
+
+            // Update queue lists
+            function updateQueueLists() {
+                // Update public queue list
+                updateQueueList(publicQueueList);
+                // Update staff queue list
+                updateQueueList(queueList);
+            }
+
+            // Update individual queue list
+            function updateQueueList(queueListElement) {
                 if (queue.length === 0) {
-                    publicQueueList.innerHTML = '<li class="queue-item">No patients in queue</li>';
+                    queueListElement.innerHTML = '<li class="queue-item">No patients in queue</li>';
                     return;
                 }
 
-                publicQueueList.innerHTML = '';
+                queueListElement.innerHTML = '';
+                
                 queue.forEach(patient => {
                     const li = document.createElement('li');
                     li.className = 'queue-item';
@@ -1261,8 +1443,41 @@
                     left.appendChild(pat);
 
                     li.appendChild(left);
-                    publicQueueList.appendChild(li);
+                    queueListElement.appendChild(li);
                 });
+            }
+
+            // Update ticket preview based on current state
+            function updateTicketPreview() {
+                if (selectedService || lastService) {
+                    ticketService.textContent = selectedService || lastService;
+                    ticketNumber.textContent = String(lastIssuedNumber + 1).padStart(3, '0');
+                    
+                    // Update patient info in ticket if available
+                    const name = patientNameInput.value.trim();
+                    const age = patientAgeInput.value.trim();
+                    const gender = patientGenderSelect.value;
+                    if (name && age && gender) {
+                        ticketPatient.textContent = `Patient: ${name} • ${age} yrs • ${gender}`;
+                    }
+                } else {
+                    ticketNumber.textContent = '--';
+                    ticketService.textContent = 'Please select a service';
+                    ticketPatient.textContent = 'Patient: —';
+                }
+            }
+
+            // Update queue controls based on system state
+            function updateQueueControls() {
+                if (isQueueStarted) {
+                    startQueueBtn.textContent = ' Queue Started';
+                    startQueueBtn.innerHTML = '<i class="fas fa-check-circle"></i> Queue Started';
+                    startQueueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
+                } else {
+                    startQueueBtn.textContent = ' Start Queue';
+                    startQueueBtn.innerHTML = '<i class="fas fa-play-circle"></i> Start Queue';
+                    startQueueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
+                }
             }
 
             // Helper function to format date for input (YYYY-MM-DD)
@@ -1282,7 +1497,7 @@
             // Initialize backup date to today
             backupDateInput.value = formatDateForInput(new Date());
 
-            // Voice announcement function (Web Speech API) - UPDATED WITH ROOMS
+            // Voice announcement function (Web Speech API)
             function announce(text) {
                 if (!('speechSynthesis' in window)) {
                     console.warn('Speech Synthesis not supported in this browser.');
@@ -1341,44 +1556,6 @@
                 showNotification('Data downloaded successfully!');
             }
 
-            // Save data to Firebase
-            function saveToFirebase() {
-                const dataToSave = {
-                    queue: queue,
-                    allPatients: allPatients,
-                    lastIssuedNumber: lastIssuedNumber,
-                    isQueueStarted: isQueueStarted,
-                    timestamp: new Date().toISOString()
-                };
-                
-                queueRef.set(dataToSave)
-                    .then(() => {
-                        console.log('Data saved to Firebase');
-                    })
-                    .catch((error) => {
-                        console.error('Error saving to Firebase:', error);
-                        showNotification('Error saving data to cloud', true);
-                    });
-            }
-
-            // Update TV display
-            function updateTVDisplay() {
-                if (tvDisplayWindow && !tvDisplayWindow.closed) {
-                    // Send data directly to the TV display window
-                    const displayData = {
-                        currentPatient: queue.length > 0 ? queue[0] : null,
-                        queue: queue,
-                        isQueueStarted: isQueueStarted
-                    };
-                    
-                    try {
-                        tvDisplayWindow.postMessage(displayData, '*');
-                    } catch (e) {
-                        console.error('Error updating TV display:', e);
-                    }
-                }
-            }
-
             // Load today's data from localStorage
             function loadTodayData() {
                 const today = new Date();
@@ -1390,10 +1567,8 @@
             function loadDataForDate(date) {
                 console.log('Loading data for date:', date);
                 
-                // Check if date is in correct format, if not try to parse it
                 let searchDate = date;
                 if (!date.includes('-')) {
-                    // If date is in MM/DD/YYYY format, convert to YYYY-MM-DD
                     const dateParts = date.split('/');
                     if (dateParts.length === 3) {
                         searchDate = `${dateParts[2]}-${dateParts[0].padStart(2, '0')}-${dateParts[1].padStart(2, '0')}`;
@@ -1402,7 +1577,6 @@
                 
                 const savedData = localStorage.getItem(`queueData_${searchDate}`);
                 console.log('Looking for key:', `queueData_${searchDate}`);
-                console.log('Found data:', savedData);
                 
                 if (savedData) {
                     const data = JSON.parse(savedData);
@@ -1419,16 +1593,17 @@
                                 <td>${patient.gender}</td>
                                 <td>${patient.service}</td>
                                 <td>${patient.status || 'Unknown'}</td>
+                                <td>${patient.date || 'Unknown'}</td>
                             `;
                             backupTableBody.appendChild(row);
                         });
                         showNotification(`Data loaded for ${formatDateForDisplay(searchDate)} - ${data.allPatients.length} patients found`);
                     } else {
-                        backupTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No data available for this date</td></tr>';
+                        backupTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No data available for this date</td></tr>';
                         showNotification('No patient data found for the selected date', true);
                     }
                 } else {
-                    backupTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No data available for this date</td></tr>';
+                    backupTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No data available for this date</td></tr>';
                     showNotification('No data found for the selected date', true);
                 }
                 
@@ -1441,13 +1616,10 @@
                 const todayKey = formatDateForInput(today);
                 const savedData = localStorage.getItem(`queueData_${todayKey}`);
                 
-                console.log('Updating stats for date:', todayKey);
-                
                 if (savedData) {
                     const data = JSON.parse(savedData);
                     totalPatientsSpan.textContent = data.allPatients ? data.allPatients.length : 0;
                     
-                    // Count unique services
                     if (data.allPatients && data.allPatients.length > 0) {
                         const services = new Set(data.allPatients.map(p => p.service));
                         servicesTodaySpan.textContent = services.size;
@@ -1457,13 +1629,9 @@
                     
                     lastBackupSpan.textContent = new Date(data.timestamp).toLocaleString();
                 } else {
-                    // Show current session data if no saved data
                     totalPatientsSpan.textContent = allPatients.length;
-                    
-                    // Count unique services from current session
                     const services = new Set(allPatients.map(p => p.service));
                     servicesTodaySpan.textContent = services.size;
-                    
                     lastBackupSpan.textContent = 'Never';
                 }
             }
@@ -1477,324 +1645,13 @@
                         console.log(key, localStorage.getItem(key));
                     }
                 }
-                console.log('=== END STORED DATA ===');
+                console.log('=== CURRENT QUEUE ===', queue);
+                console.log('=== ALL PATIENTS ===', allPatients);
+                console.log('=== TODAY PATIENTS ===', todayPatients);
+                console.log('=== CURRENT SERVING ===', currentServingPatient);
+                console.log('=== END DEBUG DATA ===');
                 showNotification('Check browser console for stored data');
             }
-
-            // Open TV Display
-            tvDisplayBtn.addEventListener('click', function() {
-                // Open a new tab with the TV display
-                tvDisplayWindow = window.open('', '_blank');
-                
-                // Write the TV display HTML to the new window
-                tvDisplayWindow.document.write(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Anchor Lab - Patient Display</title>
-                        <style>
-                            * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', Tahoma, Geneva, sans-serif; }
-                            body {
-                                background: linear-gradient(135deg, #1a6fa0 0%, #0d4d75 100%);
-                                color: white; line-height: 1.6; min-height: 100vh; padding: 20px;
-                                overflow: hidden;
-                            }
-                            .container { 
-                                width: 100%; 
-                                height: 100vh;
-                                margin: 0 auto; 
-                                background: white; 
-                                border-radius: 15px;
-                                box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-                                overflow: hidden; 
-                                display: flex;
-                                flex-direction: column;
-                            }
-                            header {
-                                background: linear-gradient(135deg, #0d4d75 0%, #1a6fa0 100%); 
-                                color: white; 
-                                padding: 20px 0;
-                                text-align: center; 
-                                display:flex; 
-                                flex-direction:column; 
-                                align-items:center; 
-                                position:relative;
-                            }
-                            .logo-container { 
-                                display:flex; 
-                                align-items:center; 
-                                margin-bottom:10px;
-                                background: rgba(255,255,255,0.15); 
-                                padding:10px 20px; 
-                                border-radius:12px; 
-                                backdrop-filter: blur(10px);
-                            }
-                            .logo { 
-                                width:80px; 
-                                height:80px; 
-                                display:flex; 
-                                align-items:center; 
-                                justify-content:center; 
-                                margin-right:5px; 
-                            }
-                            .logo img { 
-                                max-width:100%; 
-                                max-height:100%; 
-                                object-fit:contain; 
-                            }
-                            .company-name h1 { 
-                                font-size:24px; 
-                                font-weight:700; 
-                                letter-spacing:0.5px; 
-                                margin:0; 
-                                line-height:1.2; 
-                            }
-                            .system-title {
-                                font-size:18px; 
-                                font-weight:400; 
-                                margin-top:10px; 
-                                color:#e6f7ff; 
-                                padding:8px 20px;
-                                background: rgba(0,0,0,0.2); 
-                                border-radius:8px; 
-                            }
-                            .display-screen { 
-                                background: linear-gradient(135deg, #1a6fa0 0%, #0d4d75 100%); 
-                                color: white; 
-                                padding: 30px; 
-                                border-radius: 12px; 
-                                text-align: center; 
-                                margin: 20px;
-                                box-shadow: 0 12px 24px rgba(0,0,0,0.2); 
-                                flex: 1;
-                                display: flex;
-                                flex-direction: column;
-                                justify-content: center;
-                            }
-                            .display-header { 
-                                display: flex; 
-                                flex-direction: column; 
-                                align-items: center; 
-                                margin-bottom: 20px; 
-                            }
-                            .display-logo { 
-                                display: flex; 
-                                align-items: center; 
-                                margin-bottom: 10px; 
-                            }
-                            .display-title { 
-                                font-size: 24px; 
-                                font-weight: 700; 
-                                color: #ffcb05; 
-                            }
-                            .current-number { 
-                                font-size: 120px; 
-                                font-weight: 800; 
-                                color: #ffcb05; 
-                                margin: 20px 0; 
-                                text-shadow: 3px 3px 6px rgba(0,0,0,0.3); 
-                            }
-                            .current-service { 
-                                font-size: 36px; 
-                                color: #e6f7ff; 
-                                margin-bottom: 10px;
-                            }
-                            .current-patient {
-                                font-size: 24px;
-                                color: #e6f7ff;
-                                margin-bottom: 20px;
-                            }
-                            .queue-section {
-                                padding: 20px;
-                                flex: 1;
-                                overflow: auto;
-                            }
-                            .queue-list { 
-                                list-style: none; 
-                                margin-top: 20px; 
-                                max-height: 100%; 
-                                overflow-y: auto; 
-                            }
-                            .queue-item { 
-                                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
-                                padding: 15px; 
-                                margin-bottom: 10px; 
-                                border-radius: 10px; 
-                                display: flex; 
-                                justify-content: space-between; 
-                                align-items: center; 
-                                box-shadow: 0 4px 8px rgba(0,0,0,0.08); 
-                                transition: all .3s; 
-                                border-left: 5px solid #4db8ff; 
-                            }
-                            .queue-item .left { 
-                                display: flex; 
-                                align-items: center; 
-                                gap: 12px; 
-                            }
-                            .queue-number { 
-                                font-weight: 800; 
-                                font-size: 20px; 
-                                color: #1a6fa0; 
-                                margin-right: 12px; 
-                            }
-                            .queue-service { 
-                                color: #6c757d; 
-                                font-weight: 500; 
-                                font-size: 16px; 
-                            }
-                            .queue-patient { 
-                                color: #495057; 
-                                font-size: 14px; 
-                                margin-left: 10px; 
-                                font-weight: 500; 
-                            }
-                            .now-serving { 
-                                background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); 
-                                border-left: 5px solid #ff9800; 
-                            }
-                            h3 { 
-                                color: #1a6fa0; 
-                                margin: 15px 0; 
-                                text-align: center; 
-                                font-size: 22px; 
-                            }
-                            h3 i { 
-                                margin-right: 10px; 
-                                color: #1a6fa0; 
-                            }
-                            .waiting-message {
-                                text-align: center;
-                                font-size: 18px;
-                                color: #6c757d;
-                                margin-top: 20px;
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <header>
-                                <div class="logo-container">
-                                    <div class="logo">
-                                        <img src="logo_anchor.png" alt="Anchor Lab & Medical Center Inc. Logo">
-                                    </div>
-                                    <div class="company-name">
-                                        <h1>ANCHOR LAB & MEDICAL CENTER INC.</h1>
-                                    </div>
-                                </div>
-                                <div class="system-title">Patient Display Screen</div>
-                            </header>
-                            
-                            <div class="display-screen">
-                                <div class="display-header">
-                                    <div class="display-logo">
-                                        <div class="logo">
-                                            <img src="logo_anchor.png" alt="Logo">
-                                        </div>
-                                        <div class="display-title">ANCHOR LAB & MEDICAL CENTER INC.</div>
-                                    </div>
-                                </div>
-                                <h3>Now Serving</h3>
-                                <div class="current-number" id="tvCurrentNumber">--</div>
-                                <div class="current-service" id="tvCurrentService">Please wait for your number</div>
-                                <div class="current-patient" id="tvCurrentPatient"></div>
-                            </div>
-                            
-                            <div class="queue-section">
-                                <h3><i class="fas fa-clock"></i> Waiting Queue</h3>
-                                <ul class="queue-list" id="tvQueueList">
-                                    <li class="queue-item">No patients in queue</li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"><\/script>
-                        <script>
-                            // Function to update TV display with data from main system
-                            function updateTVDisplay(data) {
-                                console.log('TV Display: Received data', data);
-                                
-                                // Update current number and service
-                                if (data.currentPatient) {
-                                    document.getElementById('tvCurrentNumber').textContent = data.currentPatient.number;
-                                    document.getElementById('tvCurrentService').textContent = data.currentPatient.service;
-                                    document.getElementById('tvCurrentPatient').textContent = data.currentPatient.name + ' • ' + data.currentPatient.age + ' yrs • ' + data.currentPatient.gender;
-                                } else {
-                                    document.getElementById('tvCurrentNumber').textContent = '--';
-                                    document.getElementById('tvCurrentService').textContent = 'Please wait for your number';
-                                    document.getElementById('tvCurrentPatient').textContent = '';
-                                }
-                                
-                                // Update queue list
-                                const tvQueueList = document.getElementById('tvQueueList');
-                                if (data.queue && data.queue.length > 0) {
-                                    tvQueueList.innerHTML = '';
-                                    // Start from index 1 to skip the current patient (index 0)
-                                    for (let i = 1; i < data.queue.length; i++) {
-                                        const patient = data.queue[i];
-                                        const li = document.createElement('li');
-                                        li.className = 'queue-item';
-                                        const left = document.createElement('div');
-                                        left.className = 'left';
-                                        const num = document.createElement('div');
-                                        num.className = 'queue-number';
-                                        num.textContent = patient.number;
-                                        const svc = document.createElement('div');
-                                        svc.className = 'queue-service';
-                                        svc.textContent = patient.service;
-                                        const pat = document.createElement('div');
-                                        pat.className = 'queue-patient';
-                                        pat.textContent = patient.name + ' • ' + patient.age + ' yrs • ' + patient.gender;
-                                        left.appendChild(num);
-                                        left.appendChild(svc);
-                                        left.appendChild(pat);
-                                        li.appendChild(left);
-                                        tvQueueList.appendChild(li);
-                                    }
-                                    
-                                    // If no patients in waiting queue (only current patient)
-                                    if (data.queue.length === 1) {
-                                        tvQueueList.innerHTML = '<div class="waiting-message">No patients in waiting queue</div>';
-                                    }
-                                } else {
-                                    tvQueueList.innerHTML = '<div class="waiting-message">No patients in queue</div>';
-                                }
-                            }
-                            
-                            // Listen for messages from the main system
-                            window.addEventListener('message', function(event) {
-                                if (event.data) {
-                                    updateTVDisplay(event.data);
-                                }
-                            });
-                            
-                            // Request initial data
-                            if (window.opener && !window.opener.closed) {
-                                window.opener.postMessage('requestData', '*');
-                            }
-                        <\/script>
-                    </body>
-                    </html>
-                `);
-                tvDisplayWindow.document.close();
-                
-                // Set up the unload event to clear the reference
-                tvDisplayWindow.onbeforeunload = function() {
-                    tvDisplayWindow = null;
-                };
-                
-                showNotification('TV Display opened in new tab');
-                
-                // Update TV display with current data after a short delay to ensure the window is ready
-                setTimeout(updateTVDisplay, 500);
-            });
-
-            // Listen for messages from TV display
-            window.addEventListener('message', function(event) {
-                if (event.data === 'requestData') {
-                    updateTVDisplay();
-                }
-            });
 
             // Login
             loginBtn.addEventListener('click', function() {
@@ -1807,8 +1664,10 @@
                     mainSystem.style.display = 'block';
                     showNotification('Login successful! Welcome to Anchor Lab System');
                     
-                    // Update queue controls based on current system state
+                    // Check for daily reset and update UI
+                    checkAndResetDailyNumbering();
                     updateQueueControls();
+                    testFirebaseConnection();
                 } else {
                     showNotification('Invalid username or password. Please try again.', true);
                 }
@@ -1837,12 +1696,10 @@
             // Service selection: requires patient info first
             serviceButtons.forEach(button => {
                 button.addEventListener('click', function() {
-                    // ensure patient info entered first
                     if (!validatePatientInfo()) {
                         return;
                     }
 
-                    // remove active classes
                     serviceButtons.forEach(btn => btn.classList.remove('active'));
                     this.classList.add('active');
 
@@ -1868,19 +1725,28 @@
                 showNotification('Queue has been started! Patients can now be added.');
             });
 
-            // Next patient (call) - UPDATED WITH ROOM ANNOUNCEMENTS
+            // Next patient (call) - UPDATED: Now sets currentServingPatient
             nextBtn.addEventListener('click', function() {
                 if (queue.length === 0) {
                     showNotification('No patients in the queue', true);
                     return;
                 }
 
+                // Set the current serving patient to the first in queue
+                currentServingPatient = queue[0];
+                
+                // Remove from queue
                 const nextPatient = queue.shift();
                 
-                // Update patient status to 'Served' in allPatients
+                // Update patient status to 'Served' in allPatients and todayPatients
                 const patientIndex = allPatients.findIndex(p => p.number === nextPatient.number);
                 if (patientIndex !== -1) {
                     allPatients[patientIndex].status = 'Served';
+                }
+                
+                const todayPatientIndex = todayPatients.findIndex(p => p.number === nextPatient.number);
+                if (todayPatientIndex !== -1) {
+                    todayPatients[todayPatientIndex].status = 'Served';
                 }
 
                 // Save to Firebase (this will trigger real-time updates on all devices)
@@ -1888,21 +1754,19 @@
 
                 showNotification('Now serving patient: ' + nextPatient.number);
 
-                // Voice announcement with room number - UPDATED WITH ROOM
+                // Voice announcement with room number
                 const spokenNumber = parseInt(nextPatient.number, 10) || nextPatient.number;
-                const room = serviceRooms[nextPatient.service] || "Room 1"; // Default to Room 1 if service not found
+                const room = serviceRooms[nextPatient.service] || "Room 1";
                 announce(`Patient number ${spokenNumber}, ${nextPatient.service}, please proceed to ${room}. Thank you`);
             });
 
-            // Add to queue when ticket preview clicked - UPDATED FOR ROLL PAPER PRINTING
+            // Add to queue when ticket preview clicked
             ticketPreview.addEventListener('click', function() {
-                // ensure a service selected (or lastService exists)
                 if (!selectedService && !lastService) {
                     showNotification('Please select a medical service first.', true);
                     return;
                 }
 
-                // ensure patient info present
                 const name = patientNameInput.value.trim();
                 const age = patientAgeInput.value.trim();
                 const gender = patientGenderSelect.value;
@@ -1919,24 +1783,26 @@
                 // Number to assign is next after lastIssuedNumber
                 const number = String(lastIssuedNumber + 1).padStart(3, '0');
 
-                // Create patient object
+                // Create patient object with today's date
                 const patient = {
                     number: number,
                     service: selectedService || lastService,
                     name: name,
                     age: age,
                     gender: gender,
-                    status: 'Waiting'
+                    status: 'Waiting',
+                    date: new Date().toISOString().split('T')[0] // Add today's date
                 };
 
-                // Add to queue and allPatients (single source of truth)
+                // Add to queue and patient lists
                 queue.push(patient);
                 allPatients.push(patient);
+                todayPatients.push(patient); // Add to today's patients
 
                 // Visual feedback for printing
                 ticketPreview.classList.add('printing');
                 
-                // CREATE ROLL PAPER PRINTING WINDOW - UPDATED FOR QUEUE TICKETS
+                // Create print window for roll paper
                 const printWindow = window.open('', '_blank');
                 printWindow.document.write(`
                     <!DOCTYPE html>
@@ -2047,10 +1913,8 @@
                 `);
                 printWindow.document.close();
                 
-                // Wait for content to load then print - UPDATED FOR ROLL PAPER
                 setTimeout(() => {
                     printWindow.print();
-                    // Don't close immediately to ensure print dialog is handled
                     setTimeout(() => {
                         printWindow.close();
                     }, 500);
@@ -2074,37 +1938,6 @@
                 showNotification('Ticket ' + number + ' added to ' + (selectedService || lastService) + ' queue');
             });
 
-            // Update queue UI
-            function updateQueueDisplay() {
-                if (queue.length === 0) {
-                    queueList.innerHTML = '<li class="queue-item">No patients in queue</li>';
-                    return;
-                }
-
-                queueList.innerHTML = '';
-                queue.forEach(patient => {
-                    const li = document.createElement('li');
-                    li.className = 'queue-item';
-                    const left = document.createElement('div');
-                    left.className = 'left';
-                    const num = document.createElement('div');
-                    num.className = 'queue-number';
-                    num.textContent = patient.number;
-                    const svc = document.createElement('div');
-                    svc.className = 'queue-service';
-                    svc.textContent = patient.service;
-                    const pat = document.createElement('div');
-                    pat.className = 'queue-patient';
-                    pat.textContent = `${patient.name} • ${patient.age} yrs • ${patient.gender}`;
-                    left.appendChild(num);
-                    left.appendChild(svc);
-                    left.appendChild(pat);
-
-                    li.appendChild(left);
-                    queueList.appendChild(li);
-                });
-            }
-
             // Show demographics
             demographicsBtn.addEventListener('click', function() {
                 updateDemographicsTable();
@@ -2118,7 +1951,7 @@
                 demographicsTableBody.innerHTML = '';
                 
                 if (allPatients.length === 0) {
-                    demographicsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No patient data available</td></tr>';
+                    demographicsTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No patient data available</td></tr>';
                     return;
                 }
                 
@@ -2131,6 +1964,7 @@
                         <td>${patient.gender}</td>
                         <td>${patient.service}</td>
                         <td>${patient.status}</td>
+                        <td>${patient.date || 'Unknown'}</td>
                     `;
                     demographicsTableBody.appendChild(row);
                 });
@@ -2167,8 +2001,10 @@
                 const dataToSave = {
                     queue: queue,
                     allPatients: allPatients,
+                    todayPatients: todayPatients,
                     lastIssuedNumber: lastIssuedNumber,
                     isQueueStarted: isQueueStarted,
+                    currentServingPatient: currentServingPatient,
                     timestamp: new Date().toISOString()
                 };
                 
@@ -2221,32 +2057,27 @@
 
             // Logout
             logoutBtn.addEventListener('click', function() {
-                // Reset system state locally
                 isQueueStarted = false;
                 selectedService = null;
                 lastService = null;
+                currentServingPatient = null;
 
-                // Clear displays
                 ticketNumber.textContent = '--';
                 ticketService.textContent = 'Please select a service';
                 ticketPatient.textContent = 'Patient: —';
 
-                // Reset service buttons
                 serviceButtons.forEach(btn => btn.classList.remove('active'));
 
-                // Reset start queue button
                 startQueueBtn.textContent = ' Start Queue';
                 startQueueBtn.innerHTML = '<i class="fas fa-play-circle"></i> Start Queue';
                 startQueueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
 
-                // Clear login & patient fields
                 usernameInput.value = '';
                 passwordInput.value = '';
                 patientNameInput.value = '';
                 patientAgeInput.value = '';
                 patientGenderSelect.value = '';
 
-                // Show login, hide main system
                 loginSection.style.display = 'block';
                 document.querySelector('.content').style.display = 'flex';
                 mainSystem.style.display = 'none';
@@ -2258,11 +2089,17 @@
             ticketNumber.textContent = '--';
             ticketService.textContent = 'Please select a service';
             ticketPatient.textContent = 'Patient: —';
-            queueList.innerHTML = '<li class="queue-item">No patients in queue</li>';
             updateBackupStats();
             
-            // FIX: Initialize public display
-            updatePublicDisplay();
+            // Initialize displays
+            updateAllDisplays();
+            updateDailyStats();
+            
+            // Check for daily reset and test Firebase connection
+            setTimeout(() => {
+                checkAndResetDailyNumbering();
+                testFirebaseConnection();
+            }, 1000);
         });
     </script>
 </body>
