@@ -6,125 +6,617 @@
     <title>Anchor Lab & Medical Center Inc. - Queuing System</title>
     <link rel="icon" type="image/x-icon" href="logo_anchor.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', Tahoma, Geneva, sans-serif; }
         body {
             background: linear-gradient(135deg, #f0f7fd 0%, #e6f2ff 100%);
             color: #2c3e50; line-height: 1.6; min-height: 100vh; padding: 20px;
         }
-        .container { width: 100%; max-width: 1200px; margin: 0 auto; background: white; border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; }
-        header {
-            background: linear-gradient(135deg, #0d4d75 0%, #1a6fa0 100%); color: white; padding: 25px 0;
-            text-align: center; display:flex; flex-direction:column; align-items:center; position:relative;
+        .container { 
+            width: 100%; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            overflow: hidden; 
         }
-        .logo-container { display:flex; align-items:center; margin-bottom:15px;
-            background: rgba(255,255,255,0.15); padding:15px 25px; border-radius:12px; backdrop-filter: blur(10px);}
-        .logo { width:100px; height:100px; display:flex; align-items:center; justify-content:center; margin-right:5px; }
-        .logo img { max-width:100%; max-height:100%; object-fit:contain; }
-        .company-name h1 { font-size:28px; font-weight:700; letter-spacing:0.5px; margin:0; line-height:1.2; }
-        .system-title { font-size:22px; font-weight:400; margin-top:15px; color:#e6f7ff; padding:12px 25px;
-            background: rgba(0,0,0,0.2); border-radius:8px; }
-        .content { display:flex; flex-wrap:wrap; }
-        .login-section { flex:1; min-width:400px; padding:40px; background:white; display:flex; flex-direction:column; justify-content:center; }
-        .display-section { flex:1.2; min-width:400px; background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%); padding:30px; border-left:1px solid #e0e0e0; }
-        .login-header { text-align:center; margin-bottom:35px; }
-        .login-logo { display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
-        .login-logo .logo { width:150px; height:150px; margin-right:20px; }
-        .login-title { font-size:25px; color:#1a6fa0; font-weight:600; margin-bottom:5px; }
-        .form-group { margin-bottom:20px; position:relative; }
-        .form-group label { display:block; margin-bottom:10px; font-weight:600; color:#495057; font-size:16px; display:flex; align-items:center; }
-        .form-group label i { margin-right:10px; color:#1a6fa0; }
-        .form-group input, .form-group select { width:100%; padding:14px 16px 14px 50px; border:2px solid #dee2e6; border-radius:10px; font-size:16px; transition:all .3s; }
-        .form-group i.input-icon { position:absolute; left:16px; top:44px; color:#6c757d; font-size:20px; }
-        .form-group input:focus, .form-group select:focus { border-color:#4db8ff; outline:none; box-shadow:0 0 0 3px rgba(77,184,255,0.2); }
-        button { background:linear-gradient(135deg,#1a6fa0 0%,#0d4d75 100%); color:white; border:none; padding:18px 24px; border-radius:10px; cursor:pointer; font-size:17px; width:100%; transition:all .3s; font-weight:600; display:flex; align-items:center; justify-content:center; }
-        button i { margin-right:10px; }
-        button:hover { transform:translateY(-3px); box-shadow:0 6px 12px rgba(0,0,0,0.15); }
-        .main-system { display:none; padding:30px; }
-        .staff-panel, .display-panel { background:white; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.08); margin-bottom:30px; padding:30px; overflow:hidden; border:1px solid #e0e0e0; }
-        .panel-header { display:flex; align-items:center; margin-bottom:25px; padding-bottom:20px; border-bottom:2px solid #e9ecef; }
-        .panel-header i { font-size:24px; color:#1a6fa0; margin-right:12px; background:#e6f7ff; padding:12px; border-radius:10px; }
-        .panel-header h2 { color:#1a6fa0; font-size:24px; margin:0; }
-        .service-buttons { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; margin-bottom:30px; }
-        .service-btn { background:linear-gradient(135deg,#e6f7ff 0%,#cce5ff 100%); color:#1a6fa0; border:2px solid #4db8ff; padding:18px; border-radius:10px; cursor:pointer; text-align:center; transition:all .3s; font-weight:600; font-size:16px; box-shadow:0 4px 8px rgba(0,0,0,0.05); display:flex; flex-direction:column; align-items:center; }
-        .service-btn i { font-size:24px; margin-bottom:10px; color:#1a6fa0; }
-        .service-btn:hover, .service-btn.active { background:linear-gradient(135deg,#4db8ff 0%,#1a6fa0 100%); color:white; transform:translateY(-3px); box-shadow:0 6px 12px rgba(77,184,255,0.3); }
-        .service-btn:hover i, .service-btn.active i { color:white; }
-        .queue-controls { display:flex; justify-content:space-between; margin-top:30px; gap:18px; }
-        .control-btn { width:48%; }
-        .start-btn { background:linear-gradient(135deg,#28a745 0%,#1e7e34 100%); }
-        .next-btn { background:linear-gradient(135deg,#ff9800 0%,#e65100 100%); }
-        .ticket-preview { background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%); border:2px dashed #4db8ff; padding:30px; margin-top:30px; text-align:center; border-radius:12px; transition:all .3s; position:relative; cursor:pointer; }
-        .ticket-header { display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
-        .ticket-logo { width:100px; height:100px; display:flex; align-items:center; justify-content:center; margin-right:12px; }
-        .ticket-logo img { max-width:100%; max-height:100%; object-fit:contain; }
-        .ticket-title { font-size:20px; font-weight:700; color:#1a6fa0; }
-        .ticket-number { font-size:52px; font-weight:800; color:#e53935; margin:20px 0; text-shadow:2px 2px 4px rgba(0,0,0,0.1); }
-        .ticket-service { font-size:22px; color:#6c757d; font-weight:500; margin-bottom:15px; }
-        .ticket-patient { font-size:16px; color:#495057; font-weight:500; }
-        .ticket-preview.printing { transform:scale(1.02); box-shadow:0 12px 24px rgba(0,0,0,0.15); }
-        .display-screen { background:linear-gradient(135deg,#1a6fa0 0%,#0d4d75 100%); color:white; padding:40px; border-radius:12px; text-align:center; margin-bottom:30px; box-shadow:0 12px 24px rgba(0,0,0,0.2); }
-        .display-header { display:flex; flex-direction:column; align-items:center; margin-bottom:25px; }
-        .display-logo { display:flex; align-items:center; margin-bottom:15px; }
-        .display-title { font-size:28px; font-weight:700; color:#ffcb05; }
-        .current-number { font-size:90px; font-weight:800; color:#ffcb05; margin:30px 0; text-shadow:3px 3px 6px rgba(0,0,0,0.3); }
-        .current-service { font-size:30px; color:#e6f7ff; }
-        .queue-list { list-style:none; margin-top:30px; max-height:400px; overflow-y:auto; }
-        .queue-item { background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%); padding:20px; margin-bottom:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 8px rgba(0,0,0,0.08); transition:all .3s; border-left:5px solid #4db8ff; }
-        .queue-item .left { display:flex; align-items:center; gap:12px; }
-        .queue-number { font-weight:800; font-size:20px; color:#1a6fa0; margin-right:12px; }
-        .queue-service { color:#6c757d; font-weight:500; font-size:16px; }
-        .queue-patient { color:#495057; font-size:14px; margin-left:10px; font-weight:500; }
-        .now-serving { background:linear-gradient(135deg,#fff8e1 0%,#ffecb3 100%); border-left:5px solid #ff9800; }
-        .logout-btn { background:linear-gradient(135deg,#e53935 0%,#b71c1c 100%); max-width:220px; margin:30px auto; display:block; }
-        .notification { position:fixed; top:30px; right:30px; padding:18px 24px; border-radius:10px; background:linear-gradient(135deg,#28a745 0%,#1e7e34 100%); color:white; box-shadow:0 8px 16px rgba(0,0,0,0.2); transform:translateX(100%); transition:transform .3s ease-out; z-index:1000; font-weight:500; display:flex; align-items:center; }
-        .notification i { margin-right:12px; font-size:20px; }
-        .notification.error { background:linear-gradient(135deg,#e53935 0%,#b71c1c 100%); }
-        .notification.show { transform:translateX(0); }
-        .instructions { background:linear-gradient(135deg,#e6f7ff 0%,#cce5ff 100%); padding:20px; border-radius:10px; margin-bottom:25px; border-left:5px solid #4db8ff; }
-        .instructions h3 { color:#1a6fa0; margin-bottom:15px; display:flex; align-items:center; }
-        .instructions h3 i { margin-right:10px; }
-        .instructions ol { padding-left:30px; }
-        .instructions li { margin-bottom:12px; color:#495057; }
-        .patient-info { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
-        .patient-info .form-group { flex:1 1 220px; margin-bottom:0; }
+        header {
+            background: linear-gradient(135deg, #0d4d75 0%, #1a6fa0 100%); 
+            color: white; 
+            padding: 25px 0;
+            text-align: center; 
+            display:flex; 
+            flex-direction:column; 
+            align-items:center; 
+            position:relative;
+        }
+        .logo-container { 
+            display:flex; 
+            align-items:center; 
+            margin-bottom:15px;
+            background: rgba(255,255,255,0.15); 
+            padding:15px 25px; 
+            border-radius:12px; 
+            backdrop-filter: blur(10px);
+        }
+        .logo { 
+            width:100px; 
+            height:100px; 
+            display:flex; 
+            align-items:center; 
+            justify-content:center; 
+            margin-right:5px; 
+        }
+        .logo img { 
+            max-width:100%; 
+            max-height:100%; 
+            object-fit:contain; 
+        }
+        .company-name h1 { 
+            font-size:28px; 
+            font-weight:700; 
+            letter-spacing:0.5px; 
+            margin:0; 
+            line-height:1.2; 
+        }
+        .system-title { 
+            font-size:22px; 
+            font-weight:400; 
+            margin-top:15px; 
+            color:#e6f7ff; 
+            padding:12px 25px;
+            background: rgba(0,0,0,0.2); 
+            border-radius:8px; 
+        }
+        .content { 
+            display:flex; 
+            flex-wrap:wrap; 
+        }
+        .login-section { 
+            flex:1; 
+            min-width:400px; 
+            padding:40px; 
+            background:white; 
+            display:flex; 
+            flex-direction:column; 
+            justify-content:center; 
+        }
+        .display-section { 
+            flex:1.2; 
+            min-width:400px; 
+            background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%); 
+            padding:30px; 
+            border-left:1px solid #e0e0e0; 
+            display: flex;
+            flex-direction: column;
+        }
+        .login-header { 
+            text-align:center; 
+            margin-bottom:35px; 
+        }
+        .login-logo { 
+            display:flex; 
+            align-items:center; 
+            justify-content:center; 
+            margin-bottom:10px; 
+        }
+        .login-logo .logo { 
+            width:150px; 
+            height:150px; 
+            margin-right:20px; 
+        }
+        .login-title { 
+            font-size:25px; 
+            color:#1a6fa0; 
+            font-weight:600; 
+            margin-bottom:5px; 
+        }
+        .form-group { 
+            margin-bottom:20px; 
+            position:relative; 
+        }
+        .form-group label { 
+            display:block; 
+            margin-bottom:10px; 
+            font-weight:600; 
+            color:#495057; 
+            font-size:16px; 
+            display:flex; 
+            align-items:center; 
+        }
+        .form-group label i { 
+            margin-right:10px; 
+            color:#1a6fa0; 
+        }
+        .form-group input, .form-group select { 
+            width:100%; 
+            padding:14px 16px 14px 50px; 
+            border:2px solid #dee2e6; 
+            border-radius:10px; 
+            font-size:16px; 
+            transition:all .3s; 
+        }
+        .form-group i.input-icon { 
+            position:absolute; 
+            left:16px; 
+            top:44px; 
+            color:#6c757d; 
+            font-size:20px; 
+        }
+        .form-group input:focus, .form-group select:focus { 
+            border-color:#4db8ff; 
+            outline:none; 
+            box-shadow:0 0 0 3px rgba(77,184,255,0.2); 
+        }
+        button { 
+            background:linear-gradient(135deg,#1a6fa0 0%,#0d4d75 100%); 
+            color:white; 
+            border:none; 
+            padding:18px 24px; 
+            border-radius:10px; 
+            cursor:pointer; 
+            font-size:17px; 
+            width:100%; 
+            transition:all .3s; 
+            font-weight:600; 
+            display:flex; 
+            align-items:center; 
+            justify-content:center; 
+        }
+        button i { 
+            margin-right:10px; 
+        }
+        button:hover { 
+            transform:translateY(-3px); 
+            box-shadow:0 6px 12px rgba(0,0,0,0.15); 
+        }
+        .main-system { 
+            display:none; 
+            padding:30px; 
+        }
+        .staff-panel, .display-panel { 
+            background:white; 
+            border-radius:12px; 
+            box-shadow:0 5px 15px rgba(0,0,0,0.08); 
+            margin-bottom:30px; 
+            padding:30px; 
+            overflow:hidden; 
+            border:1px solid #e0e0e0; 
+        }
+        .panel-header { 
+            display:flex; 
+            align-items:center; 
+            margin-bottom:25px; 
+            padding-bottom:20px; 
+            border-bottom:2px solid #e9ecef; 
+        }
+        .panel-header i { 
+            font-size:24px; 
+            color:#1a6fa0; 
+            margin-right:12px; 
+            background:#e6f7ff; 
+            padding:12px; 
+            border-radius:10px; 
+        }
+        .panel-header h2 { 
+            color:#1a6fa0; 
+            font-size:24px; 
+            margin:0; 
+        }
+        .service-buttons { 
+            display:grid; 
+            grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); 
+            gap:16px; 
+            margin-bottom:30px; 
+        }
+        .service-btn { 
+            background:linear-gradient(135deg,#e6f7ff 0%,#cce5ff 100%); 
+            color:#1a6fa0; 
+            border:2px solid #4db8ff; 
+            padding:18px; 
+            border-radius:10px; 
+            cursor:pointer; 
+            text-align:center; 
+            transition:all .3s; 
+            font-weight:600; 
+            font-size:16px; 
+            box-shadow:0 4px 8px rgba(0,0,0,0.05); 
+            display:flex; 
+            flex-direction:column; 
+            align-items:center; 
+        }
+        .service-btn i { 
+            font-size:24px; 
+            margin-bottom:10px; 
+            color:#1a6fa0; 
+        }
+        .service-btn:hover, .service-btn.active { 
+            background:linear-gradient(135deg,#4db8ff 0%,#1a6fa0 100%); 
+            color:white; 
+            transform:translateY(-3px); 
+            box-shadow:0 6px 12px rgba(77,184,255,0.3); 
+        }
+        .service-btn:hover i, .service-btn.active i { 
+            color:white; 
+        }
+        .queue-controls { 
+            display:flex; 
+            justify-content:space-between; 
+            margin-top:30px; 
+            gap:18px; 
+        }
+        .control-btn { 
+            width:48%; 
+        }
+        .start-btn { 
+            background:linear-gradient(135deg,#28a745 0%,#1e7e34 100%); 
+        }
+        .next-btn { 
+            background:linear-gradient(135deg,#ff9800 0%,#e65100 100%); 
+        }
+        .ticket-preview { 
+            background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%); 
+            border:2px dashed #4db8ff; 
+            padding:30px; 
+            margin-top:30px; 
+            text-align:center; 
+            border-radius:12px; 
+            transition:all .3s; 
+            position:relative; 
+            cursor:pointer; 
+        }
+        .ticket-header { 
+            display:flex; 
+            align-items:center; 
+            justify-content:center; 
+            margin-bottom:20px; 
+        }
+        .ticket-logo { 
+            width:100px; 
+            height:100px; 
+            display:flex; 
+            align-items:center; 
+            justify-content:center; 
+            margin-right:12px; 
+        }
+        .ticket-logo img { 
+            max-width:100%; 
+            max-height:100%; 
+            object-fit:contain; 
+        }
+        .ticket-title { 
+            font-size:20px; 
+            font-weight:700; 
+            color:#1a6fa0; 
+        }
+        .ticket-number { 
+            font-size:52px; 
+            font-weight:800; 
+            color:#e53935; 
+            margin:20px 0; 
+            text-shadow:2px 2px 4px rgba(0,0,0,0.1); 
+        }
+        .ticket-service { 
+            font-size:22px; 
+            color:#6c757d; 
+            font-weight:500; 
+            margin-bottom:15px; 
+        }
+        .ticket-patient { 
+            font-size:16px; 
+            color:#495057; 
+            font-weight:500; 
+        }
+        .ticket-preview.printing { 
+            transform:scale(1.02); 
+            box-shadow:0 12px 24px rgba(0,0,0,0.15); 
+        }
+        .display-screen { 
+            background:linear-gradient(135deg,#1a6fa0 0%,#0d4d75 100%); 
+            color:white; 
+            padding:40px; 
+            border-radius:12px; 
+            text-align:center; 
+            margin-bottom:30px; 
+            box-shadow:0 12px 24px rgba(0,0,0,0.2); 
+            /* FIX: Ensure display fits properly */
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .display-header { 
+            display:flex; 
+            flex-direction:column; 
+            align-items:center; 
+            margin-bottom:25px; 
+        }
+        .display-logo { 
+            display:flex; 
+            align-items:center; 
+            margin-bottom:15px; 
+        }
+        .display-title { 
+            font-size:28px; 
+            font-weight:700; 
+            color:#ffcb05; 
+        }
+        .current-number { 
+            font-size:90px; 
+            font-weight:800; 
+            color:#ffcb05; 
+            margin:30px 0; 
+            text-shadow:3px 3px 6px rgba(0,0,0,0.3); 
+        }
+        .current-service { 
+            font-size:30px; 
+            color:#e6f7ff; 
+        }
+        .queue-list { 
+            list-style:none; 
+            margin-top:30px; 
+            max-height:400px; 
+            overflow-y:auto; 
+            flex-grow: 1;
+        }
+        .queue-item { 
+            background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%); 
+            padding:20px; 
+            margin-bottom:15px; 
+            border-radius:10px; 
+            display:flex; 
+            justify-content:space-between; 
+            align-items:center; 
+            box-shadow:0 4px 8px rgba(0,0,0,0.08); 
+            transition:all .3s; 
+            border-left:5px solid #4db8ff; 
+        }
+        .queue-item .left { 
+            display:flex; 
+            align-items:center; 
+            gap:12px; 
+        }
+        .queue-number { 
+            font-weight:800; 
+            font-size:20px; 
+            color:#1a6fa0; 
+            margin-right:12px; 
+        }
+        .queue-service { 
+            color:#6c757d; 
+            font-weight:500; 
+            font-size:16px; 
+        }
+        .queue-patient { 
+            color:#495057; 
+            font-size:14px; 
+            margin-left:10px; 
+            font-weight:500; 
+        }
+        .now-serving { 
+            background:linear-gradient(135deg,#fff8e1 0%,#ffecb3 100%); 
+            border-left:5px solid #ff9800; 
+        }
+        .logout-btn { 
+            background:linear-gradient(135deg,#e53935 0%,#b71c1c 100%); 
+            max-width:220px; 
+            margin:30px auto; 
+            display:block; 
+        }
+        .notification { 
+            position:fixed; 
+            top:30px; 
+            right:30px; 
+            padding:18px 24px; 
+            border-radius:10px; 
+            background:linear-gradient(135deg,#28a745 0%,#1e7e34 100%); 
+            color:white; 
+            box-shadow:0 8px 16px rgba(0,0,0,0.2); 
+            transform:translateX(100%); 
+            transition:transform .3s ease-out; 
+            z-index:1000; 
+            font-weight:500; 
+            display:flex; 
+            align-items:center; 
+        }
+        .notification i { 
+            margin-right:12px; 
+            font-size:20px; 
+        }
+        .notification.error { 
+            background:linear-gradient(135deg,#e53935 0%,#b71c1c 100%); 
+        }
+        .notification.show { 
+            transform:translateX(0); 
+        }
+        .instructions { 
+            background:linear-gradient(135deg,#e6f7ff 0%,#cce5ff 100%); 
+            padding:20px; 
+            border-radius:10px; 
+            margin-bottom:25px; 
+            border-left:5px solid #4db8ff; 
+        }
+        .instructions h3 { 
+            color:#1a6fa0; 
+            margin-bottom:15px; 
+            display:flex; 
+            align-items:center; 
+        }
+        .instructions h3 i { 
+            margin-right:10px; 
+        }
+        .instructions ol { 
+            padding-left:30px; 
+        }
+        .instructions li { 
+            margin-bottom:12px; 
+            color:#495057; 
+        }
+        .patient-info { 
+            display:flex; 
+            gap:12px; 
+            margin-bottom:16px; 
+            flex-wrap:wrap; 
+        }
+        .patient-info .form-group { 
+            flex:1 1 220px; 
+            margin-bottom:0; 
+        }
+        
+        /* TV Display Button */
+        .tv-display-btn { 
+            background:linear-gradient(135deg,#9c27b0 0%,#6a1b9a 100%); 
+            max-width: 280px; 
+            margin: 20px 0; 
+        }
         
         /* Demographics Section */
-        .demographics-section { display: none; margin-top: 30px; }
-        .demographics-btn { background:linear-gradient(135deg,#9c27b0 0%,#6a1b9a 100%); max-width: 280px; margin: 20px 0; }
-        .demographics-panel { background:white; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.08); margin-bottom:30px; padding:30px; overflow:hidden; border:1px solid #e0e0e0; }
-        .demographics-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .demographics-table th, .demographics-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
-        .demographics-table th { background-color: #f8f9fa; font-weight: 600; color: #1a6fa0; }
-        .demographics-table tr:hover { background-color: #f5f5f5; }
-        .demographics-actions { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
-        .print-demographics-btn { background:linear-gradient(135deg,#4caf50 0%,#2e7d32 100%); max-width: 200px; }
-        .download-demographics-btn { background:linear-gradient(135deg,#2196f3 0%,#0d47a1 100%); max-width: 200px; }
-        .close-demographics-btn { background:linear-gradient(135deg,#607d8b 0%,#37474f 100%); max-width: 200px; }
+        .demographics-section { 
+            display: none; 
+            margin-top: 30px; 
+        }
+        .demographics-btn { 
+            background:linear-gradient(135deg,#9c27b0 0%,#6a1b9a 100%); 
+            max-width: 280px; 
+            margin: 20px 0; 
+        }
+        .demographics-panel { 
+            background:white; 
+            border-radius:12px; 
+            box-shadow:0 5px 15px rgba(0,0,0,0.08); 
+            margin-bottom:30px; 
+            padding:30px; 
+            overflow:hidden; 
+            border:1px solid #e0e0e0; 
+        }
+        .demographics-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+        }
+        .demographics-table th, .demographics-table td { 
+            padding: 12px 15px; 
+            text-align: left; 
+            border-bottom: 1px solid #e0e0e0; 
+        }
+        .demographics-table th { 
+            background-color: #f8f9fa; 
+            font-weight: 600; 
+            color: #1a6fa0; 
+        }
+        .demographics-table tr:hover { 
+            background-color: #f5f5f5; 
+        }
+        .demographics-actions { 
+            display: flex; 
+            gap: 15px; 
+            margin-top: 20px; 
+            flex-wrap: wrap; 
+        }
+        .print-demographics-btn { 
+            background:linear-gradient(135deg,#4caf50 0%,#2e7d32 100%); 
+            max-width: 200px; 
+        }
+        .download-demographics-btn { 
+            background:linear-gradient(135deg,#2196f3 0%,#0d47a1 100%); 
+            max-width: 200px; 
+        }
+        .close-demographics-btn { 
+            background:linear-gradient(135deg,#607d8b 0%,#37474f 100%); 
+            max-width: 200px; 
+        }
         
         /* Backup Section */
-        .backup-section { display: none; margin-top: 30px; }
-        .backup-btn { background:linear-gradient(135deg,#ff9800 0%,#e65100 100%); max-width: 280px; margin: 20px 0; }
-        .backup-panel { background:white; border-radius:12px; box-shadow:0 5px-15px rgba(0,0,0,0.08); margin-bottom:30px; padding:30px; overflow:hidden; border:1px solid #e0e0e0; }
-        .backup-controls { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
-        .save-backup-btn { background:linear-gradient(135deg,#4caf50 0%,#2e7d32 100%); max-width: 200px; }
-        .load-backup-btn { background:linear-gradient(135deg,#2196f3 0%,#0d47a1 100%); max-width: 200px; }
-        .date-selector { display: flex; gap: 15px; margin: 20px 0; align-items: center; flex-wrap: wrap; }
-        .date-selector label { font-weight: 600; color: #495057; }
-        .date-selector input { padding: 10px; border: 2px solid #dee2e6; border-radius: 8px; }
-        .backup-stats { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px; }
-        .backup-stats h4 { color: #1a6fa0; margin-bottom: 10px; }
+        .backup-section { 
+            display: none; 
+            margin-top: 30px; 
+        }
+        .backup-btn { 
+            background:linear-gradient(135deg,#ff9800 0%,#e65100 100%); 
+            max-width: 280px; 
+            margin: 20px 0; 
+        }
+        .backup-panel { 
+            background:white; 
+            border-radius:12px; 
+            box-shadow:0 5px 15px rgba(0,0,0,0.08); 
+            margin-bottom:30px; 
+            padding:30px; 
+            overflow:hidden; 
+            border:1px solid #e0e0e0; 
+        }
+        .backup-controls { 
+            display: flex; 
+            gap: 15px; 
+            margin-top: 20px; 
+            flex-wrap: wrap; 
+        }
+        .save-backup-btn { 
+            background:linear-gradient(135deg,#4caf50 0%,#2e7d32 100%); 
+            max-width: 200px; 
+        }
+        .load-backup-btn { 
+            background:linear-gradient(135deg,#2196f3 0%,#0d47a1 100%); 
+            max-width: 200px; 
+        }
+        .date-selector { 
+            display: flex; 
+            gap: 15px; 
+            margin: 20px 0; 
+            align-items: center; 
+            flex-wrap: wrap; 
+        }
+        .date-selector label { 
+            font-weight: 600; 
+            color: #495057; 
+        }
+        .date-selector input { 
+            padding: 10px; 
+            border: 2px solid #dee2e6; 
+            border-radius: 8px; 
+        }
+        .backup-stats { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-top: 20px; 
+        }
+        .backup-stats h4 { 
+            color: #1a6fa0; 
+            margin-bottom: 10px; 
+        }
         
         /* Debug button */
-        .debug-btn { background:linear-gradient(135deg,#607d8b 0%,#37474f 100%); max-width: 200px; margin: 10px 0; }
+        .debug-btn { 
+            background:linear-gradient(135deg,#607d8b 0%,#37474f 100%); 
+            max-width: 200px; 
+            margin: 10px 0; 
+        }
         
-        @media (max-width:900px) { .content { flex-direction:column; } .display-section { border-left:none; border-top:1px solid #e0e0e0; } }
+        @media (max-width:900px) { 
+            .content { 
+                flex-direction:column; 
+            } 
+            .display-section { 
+                border-left:none; 
+                border-top:1px solid #e0e0e0; 
+            } 
+        }
         
         /* ROLL PAPER PRINTING STYLES - UPDATED FOR ROLL PAPER QUEUE TICKETS */
         @media print { 
-            body * { visibility:hidden; } 
-            .ticket-preview, .ticket-preview * { visibility:visible; } 
+            body * { 
+                visibility:hidden; 
+            } 
+            .ticket-preview, .ticket-preview * { 
+                visibility:visible; 
+            } 
             .ticket-preview { 
                 position: absolute; 
                 left: 0; 
@@ -217,6 +709,55 @@
                 display: none !important;
             }
         }
+        
+        /* FIX: Improved display layout to prevent cut-off */
+        .display-section h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #1a6fa0;
+        }
+        
+        /* FIX: Ensure display screen fits properly */
+        .display-screen .display-header {
+            margin-bottom: 10px;
+        }
+        
+        /* FIX: Adjust display for smaller screens */
+        @media (max-width: 768px) {
+            .display-screen {
+                padding: 20px;
+            }
+            .current-number {
+                font-size: 60px;
+            }
+            .current-service {
+                font-size: 20px;
+            }
+        }
+        
+        /* Connection status indicator */
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .connection-status.connected {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            color: white;
+        }
+        .connection-status.disconnected {
+            background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -267,17 +808,16 @@
                             <div class="logo">
                                 <img src="logo_anchor.png" alt="Logo">
                             </div>
+                            <div class="display-title">ANCHOR LAB & MEDICAL CENTER INC.</div>
                         </div>
-                        <div class="display-subtitle">ANCHOR LAB &</div>
-                        <div class="display-subtitle">MEDICAL CENTER INC.</div>
                     </div>
                     <h3>Now Serving</h3>
-                    <div class="current-number">--</div>
-                    <div class="current-service">Please wait for your number</div>
+                    <div class="current-number" id="publicCurrentNumber">--</div>
+                    <div class="current-service" id="publicCurrentService">Please wait for your number</div>
                 </div>
 
                 <h3><i class="fas fa-clock"></i> Waiting Queue</h3>
-                <ul class="queue-list" id="queueList">
+                <ul class="queue-list" id="publicQueueList">
                     <li class="queue-item">No patients in queue</li>
                 </ul>
             </section>
@@ -352,6 +892,9 @@
                     <button class="control-btn start-btn" id="startQueueBtn"><i class="fas fa-play-circle"></i> Start Queue</button>
                     <button class="control-btn next-btn" id="nextBtn"><i class="fas fa-forward"></i> Next Patient</button>
                 </div>
+
+                <!-- TV Display Button -->
+                <button class="tv-display-btn" id="tvDisplayBtn"><i class="fas fa-tv"></i> Open TV Display</button>
 
                 <button class="demographics-btn" id="demographicsBtn"><i class="fas fa-chart-bar"></i> View Demographics</button>
                 
@@ -445,12 +988,6 @@
                         <button class="load-backup-btn" id="loadBackupBtn">
                             <i class="fas fa-folder-open"></i> Load Data
                         </button>
-                        <button class="export-share-btn" id="exportShareBtn" style="background:linear-gradient(135deg,#9c27b0 0%,#6a1b9a 100%);">
-                            <i class="fas fa-share-alt"></i> Export Shared File
-                        </button>
-                        <button class="import-share-btn" id="importShareBtn" style="background:linear-gradient(135deg,#ff9800 0%,#e65100 100%);">
-                            <i class="fas fa-file-import"></i> Import Shared File
-                        </button>
                     </div>
                     
                     <div class="date-selector">
@@ -506,7 +1043,29 @@
         <span>Patient added to queue successfully!</span>
     </div>
 
+    <!-- Connection Status Indicator -->
+    <div class="connection-status" id="connectionStatus">
+        <i class="fas fa-wifi"></i>
+        <span>Connecting...</span>
+    </div>
+
     <script>
+        // Firebase Configuration - YOUR ACTUAL CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXYZqlx4vGtcifEWvFqOVFrrZUBkFoXEs",
+            authDomain: "anchor-lab-queue.firebaseapp.com",
+            databaseURL: "https://anchor-lab-queue-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "anchor-lab-queue",
+            storageBucket: "anchor-lab-queue.firebasestorage.app",
+            messagingSenderId: "817997274125",
+            appId: "1:817997274125:web:148493e8972c42c4a80944",
+            measurementId: "G-BV8C2KTS8V"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         document.addEventListener('DOMContentLoaded', function() {
             // DOM Elements
             const loginSection = document.getElementById('loginSection');
@@ -525,6 +1084,15 @@
             const queueList = document.getElementById('queueListDisplay');
             const logoutBtn = document.getElementById('logoutBtn');
             const notification = document.getElementById('notification');
+            const connectionStatus = document.getElementById('connectionStatus');
+            
+            // Public display elements
+            const publicCurrentNumber = document.getElementById('publicCurrentNumber');
+            const publicCurrentService = document.getElementById('publicCurrentService');
+            const publicQueueList = document.getElementById('publicQueueList');
+            
+            // TV Display button
+            const tvDisplayBtn = document.getElementById('tvDisplayBtn');
             
             // Demographics elements
             const demographicsBtn = document.getElementById('demographicsBtn');
@@ -548,10 +1116,6 @@
             const servicesTodaySpan = document.getElementById('servicesToday');
             const lastBackupSpan = document.getElementById('lastBackup');
             
-            // File sharing elements
-            const exportShareBtn = document.getElementById('exportShareBtn');
-            const importShareBtn = document.getElementById('importShareBtn');
-            
             // Debug button
             const debugBtn = document.getElementById('debugBtn');
 
@@ -568,6 +1132,7 @@
             let lastIssuedNumber = 0; // last assigned ticket number
             let selectedService = null;
             let lastService = null;
+            let tvDisplayWindow = null;
 
             // Staff credentials (in a real system, this would be handled server-side)
             const staffCredentials = [
@@ -587,6 +1152,118 @@
                 "Dental": "Room 3",
                 "CBC": "Room 5"
             };
+
+            // Firebase Realtime Database Reference
+            const queueRef = database.ref('queue');
+            const systemRef = database.ref('system');
+
+            // Firebase Connection Status
+            database.ref('.info/connected').on('value', function(snap) {
+                if (snap.val() === true) {
+                    connectionStatus.innerHTML = '<i class="fas fa-wifi"></i><span>Connected</span>';
+                    connectionStatus.className = 'connection-status connected';
+                } else {
+                    connectionStatus.innerHTML = '<i class="fas fa-wifi-slash"></i><span>Offline</span>';
+                    connectionStatus.className = 'connection-status disconnected';
+                }
+            });
+
+            // Listen for real-time queue updates from Firebase
+            queueRef.on('value', function(snapshot) {
+                const data = snapshot.val();
+                if (data) {
+                    queue = data.queue || [];
+                    allPatients = data.allPatients || [];
+                    lastIssuedNumber = data.lastIssuedNumber || 0;
+                    isQueueStarted = data.isQueueStarted || false;
+                    
+                    // Update UI
+                    updateQueueDisplay();
+                    updatePublicDisplay();
+                    updateTicketPreview();
+                    
+                    // Update staff panel if logged in
+                    if (mainSystem.style.display === 'block') {
+                        updateQueueControls();
+                    }
+                }
+            });
+
+            // Update ticket preview based on current state
+            function updateTicketPreview() {
+                if (selectedService || lastService) {
+                    ticketService.textContent = selectedService || lastService;
+                    ticketNumber.textContent = String(lastIssuedNumber + 1).padStart(3, '0');
+                } else {
+                    ticketNumber.textContent = '--';
+                    ticketService.textContent = 'Please select a service';
+                }
+            }
+
+            // Update queue controls based on system state
+            function updateQueueControls() {
+                if (isQueueStarted) {
+                    startQueueBtn.textContent = ' Queue Started';
+                    startQueueBtn.innerHTML = '<i class="fas fa-check-circle"></i> Queue Started';
+                    startQueueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
+                } else {
+                    startQueueBtn.textContent = ' Start Queue';
+                    startQueueBtn.innerHTML = '<i class="fas fa-play-circle"></i> Start Queue';
+                    startQueueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
+                }
+            }
+
+            // FIX: Improved display update function
+            function updatePublicDisplay() {
+                if (queue.length > 0) {
+                    const currentPatient = queue[0];
+                    publicCurrentNumber.textContent = currentPatient.number;
+                    publicCurrentService.textContent = currentPatient.service;
+                    
+                    // Update staff display too
+                    currentNumber.textContent = currentPatient.number;
+                    currentService.textContent = currentPatient.service + (currentPatient.name ? ' — ' + currentPatient.name : '');
+                } else {
+                    publicCurrentNumber.textContent = '--';
+                    publicCurrentService.textContent = 'Please wait for your number';
+                    currentNumber.textContent = '--';
+                    currentService.textContent = 'No patients in queue';
+                }
+                
+                // Update public queue list
+                updatePublicQueueList();
+            }
+            
+            // FIX: Update public queue list
+            function updatePublicQueueList() {
+                if (queue.length === 0) {
+                    publicQueueList.innerHTML = '<li class="queue-item">No patients in queue</li>';
+                    return;
+                }
+
+                publicQueueList.innerHTML = '';
+                queue.forEach(patient => {
+                    const li = document.createElement('li');
+                    li.className = 'queue-item';
+                    const left = document.createElement('div');
+                    left.className = 'left';
+                    const num = document.createElement('div');
+                    num.className = 'queue-number';
+                    num.textContent = patient.number;
+                    const svc = document.createElement('div');
+                    svc.className = 'queue-service';
+                    svc.textContent = patient.service;
+                    const pat = document.createElement('div');
+                    pat.className = 'queue-patient';
+                    pat.textContent = `${patient.name} • ${patient.age} yrs • ${patient.gender}`;
+                    left.appendChild(num);
+                    left.appendChild(svc);
+                    left.appendChild(pat);
+
+                    li.appendChild(left);
+                    publicQueueList.appendChild(li);
+                });
+            }
 
             // Helper function to format date for input (YYYY-MM-DD)
             function formatDateForInput(date) {
@@ -664,10 +1341,8 @@
                 showNotification('Data downloaded successfully!');
             }
 
-            // Save today's data to localStorage
-            function saveTodayData() {
-                const today = new Date();
-                const todayKey = formatDateForInput(today);
+            // Save data to Firebase
+            function saveToFirebase() {
                 const dataToSave = {
                     queue: queue,
                     allPatients: allPatients,
@@ -676,10 +1351,32 @@
                     timestamp: new Date().toISOString()
                 };
                 
-                console.log('Saving data for date:', todayKey, dataToSave);
-                localStorage.setItem(`queueData_${todayKey}`, JSON.stringify(dataToSave));
-                updateBackupStats();
-                showNotification(`Data saved for ${formatDateForDisplay(todayKey)}`);
+                queueRef.set(dataToSave)
+                    .then(() => {
+                        console.log('Data saved to Firebase');
+                    })
+                    .catch((error) => {
+                        console.error('Error saving to Firebase:', error);
+                        showNotification('Error saving data to cloud', true);
+                    });
+            }
+
+            // Update TV display
+            function updateTVDisplay() {
+                if (tvDisplayWindow && !tvDisplayWindow.closed) {
+                    // Send data directly to the TV display window
+                    const displayData = {
+                        currentPatient: queue.length > 0 ? queue[0] : null,
+                        queue: queue,
+                        isQueueStarted: isQueueStarted
+                    };
+                    
+                    try {
+                        tvDisplayWindow.postMessage(displayData, '*');
+                    } catch (e) {
+                        console.error('Error updating TV display:', e);
+                    }
+                }
             }
 
             // Load today's data from localStorage
@@ -784,6 +1481,321 @@
                 showNotification('Check browser console for stored data');
             }
 
+            // Open TV Display
+            tvDisplayBtn.addEventListener('click', function() {
+                // Open a new tab with the TV display
+                tvDisplayWindow = window.open('', '_blank');
+                
+                // Write the TV display HTML to the new window
+                tvDisplayWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Anchor Lab - Patient Display</title>
+                        <style>
+                            * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', Tahoma, Geneva, sans-serif; }
+                            body {
+                                background: linear-gradient(135deg, #1a6fa0 0%, #0d4d75 100%);
+                                color: white; line-height: 1.6; min-height: 100vh; padding: 20px;
+                                overflow: hidden;
+                            }
+                            .container { 
+                                width: 100%; 
+                                height: 100vh;
+                                margin: 0 auto; 
+                                background: white; 
+                                border-radius: 15px;
+                                box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+                                overflow: hidden; 
+                                display: flex;
+                                flex-direction: column;
+                            }
+                            header {
+                                background: linear-gradient(135deg, #0d4d75 0%, #1a6fa0 100%); 
+                                color: white; 
+                                padding: 20px 0;
+                                text-align: center; 
+                                display:flex; 
+                                flex-direction:column; 
+                                align-items:center; 
+                                position:relative;
+                            }
+                            .logo-container { 
+                                display:flex; 
+                                align-items:center; 
+                                margin-bottom:10px;
+                                background: rgba(255,255,255,0.15); 
+                                padding:10px 20px; 
+                                border-radius:12px; 
+                                backdrop-filter: blur(10px);
+                            }
+                            .logo { 
+                                width:80px; 
+                                height:80px; 
+                                display:flex; 
+                                align-items:center; 
+                                justify-content:center; 
+                                margin-right:5px; 
+                            }
+                            .logo img { 
+                                max-width:100%; 
+                                max-height:100%; 
+                                object-fit:contain; 
+                            }
+                            .company-name h1 { 
+                                font-size:24px; 
+                                font-weight:700; 
+                                letter-spacing:0.5px; 
+                                margin:0; 
+                                line-height:1.2; 
+                            }
+                            .system-title {
+                                font-size:18px; 
+                                font-weight:400; 
+                                margin-top:10px; 
+                                color:#e6f7ff; 
+                                padding:8px 20px;
+                                background: rgba(0,0,0,0.2); 
+                                border-radius:8px; 
+                            }
+                            .display-screen { 
+                                background: linear-gradient(135deg, #1a6fa0 0%, #0d4d75 100%); 
+                                color: white; 
+                                padding: 30px; 
+                                border-radius: 12px; 
+                                text-align: center; 
+                                margin: 20px;
+                                box-shadow: 0 12px 24px rgba(0,0,0,0.2); 
+                                flex: 1;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                            }
+                            .display-header { 
+                                display: flex; 
+                                flex-direction: column; 
+                                align-items: center; 
+                                margin-bottom: 20px; 
+                            }
+                            .display-logo { 
+                                display: flex; 
+                                align-items: center; 
+                                margin-bottom: 10px; 
+                            }
+                            .display-title { 
+                                font-size: 24px; 
+                                font-weight: 700; 
+                                color: #ffcb05; 
+                            }
+                            .current-number { 
+                                font-size: 120px; 
+                                font-weight: 800; 
+                                color: #ffcb05; 
+                                margin: 20px 0; 
+                                text-shadow: 3px 3px 6px rgba(0,0,0,0.3); 
+                            }
+                            .current-service { 
+                                font-size: 36px; 
+                                color: #e6f7ff; 
+                                margin-bottom: 10px;
+                            }
+                            .current-patient {
+                                font-size: 24px;
+                                color: #e6f7ff;
+                                margin-bottom: 20px;
+                            }
+                            .queue-section {
+                                padding: 20px;
+                                flex: 1;
+                                overflow: auto;
+                            }
+                            .queue-list { 
+                                list-style: none; 
+                                margin-top: 20px; 
+                                max-height: 100%; 
+                                overflow-y: auto; 
+                            }
+                            .queue-item { 
+                                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+                                padding: 15px; 
+                                margin-bottom: 10px; 
+                                border-radius: 10px; 
+                                display: flex; 
+                                justify-content: space-between; 
+                                align-items: center; 
+                                box-shadow: 0 4px 8px rgba(0,0,0,0.08); 
+                                transition: all .3s; 
+                                border-left: 5px solid #4db8ff; 
+                            }
+                            .queue-item .left { 
+                                display: flex; 
+                                align-items: center; 
+                                gap: 12px; 
+                            }
+                            .queue-number { 
+                                font-weight: 800; 
+                                font-size: 20px; 
+                                color: #1a6fa0; 
+                                margin-right: 12px; 
+                            }
+                            .queue-service { 
+                                color: #6c757d; 
+                                font-weight: 500; 
+                                font-size: 16px; 
+                            }
+                            .queue-patient { 
+                                color: #495057; 
+                                font-size: 14px; 
+                                margin-left: 10px; 
+                                font-weight: 500; 
+                            }
+                            .now-serving { 
+                                background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); 
+                                border-left: 5px solid #ff9800; 
+                            }
+                            h3 { 
+                                color: #1a6fa0; 
+                                margin: 15px 0; 
+                                text-align: center; 
+                                font-size: 22px; 
+                            }
+                            h3 i { 
+                                margin-right: 10px; 
+                                color: #1a6fa0; 
+                            }
+                            .waiting-message {
+                                text-align: center;
+                                font-size: 18px;
+                                color: #6c757d;
+                                margin-top: 20px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <header>
+                                <div class="logo-container">
+                                    <div class="logo">
+                                        <img src="logo_anchor.png" alt="Anchor Lab & Medical Center Inc. Logo">
+                                    </div>
+                                    <div class="company-name">
+                                        <h1>ANCHOR LAB & MEDICAL CENTER INC.</h1>
+                                    </div>
+                                </div>
+                                <div class="system-title">Patient Display Screen</div>
+                            </header>
+                            
+                            <div class="display-screen">
+                                <div class="display-header">
+                                    <div class="display-logo">
+                                        <div class="logo">
+                                            <img src="logo_anchor.png" alt="Logo">
+                                        </div>
+                                        <div class="display-title">ANCHOR LAB & MEDICAL CENTER INC.</div>
+                                    </div>
+                                </div>
+                                <h3>Now Serving</h3>
+                                <div class="current-number" id="tvCurrentNumber">--</div>
+                                <div class="current-service" id="tvCurrentService">Please wait for your number</div>
+                                <div class="current-patient" id="tvCurrentPatient"></div>
+                            </div>
+                            
+                            <div class="queue-section">
+                                <h3><i class="fas fa-clock"></i> Waiting Queue</h3>
+                                <ul class="queue-list" id="tvQueueList">
+                                    <li class="queue-item">No patients in queue</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"><\/script>
+                        <script>
+                            // Function to update TV display with data from main system
+                            function updateTVDisplay(data) {
+                                console.log('TV Display: Received data', data);
+                                
+                                // Update current number and service
+                                if (data.currentPatient) {
+                                    document.getElementById('tvCurrentNumber').textContent = data.currentPatient.number;
+                                    document.getElementById('tvCurrentService').textContent = data.currentPatient.service;
+                                    document.getElementById('tvCurrentPatient').textContent = data.currentPatient.name + ' • ' + data.currentPatient.age + ' yrs • ' + data.currentPatient.gender;
+                                } else {
+                                    document.getElementById('tvCurrentNumber').textContent = '--';
+                                    document.getElementById('tvCurrentService').textContent = 'Please wait for your number';
+                                    document.getElementById('tvCurrentPatient').textContent = '';
+                                }
+                                
+                                // Update queue list
+                                const tvQueueList = document.getElementById('tvQueueList');
+                                if (data.queue && data.queue.length > 0) {
+                                    tvQueueList.innerHTML = '';
+                                    // Start from index 1 to skip the current patient (index 0)
+                                    for (let i = 1; i < data.queue.length; i++) {
+                                        const patient = data.queue[i];
+                                        const li = document.createElement('li');
+                                        li.className = 'queue-item';
+                                        const left = document.createElement('div');
+                                        left.className = 'left';
+                                        const num = document.createElement('div');
+                                        num.className = 'queue-number';
+                                        num.textContent = patient.number;
+                                        const svc = document.createElement('div');
+                                        svc.className = 'queue-service';
+                                        svc.textContent = patient.service;
+                                        const pat = document.createElement('div');
+                                        pat.className = 'queue-patient';
+                                        pat.textContent = patient.name + ' • ' + patient.age + ' yrs • ' + patient.gender;
+                                        left.appendChild(num);
+                                        left.appendChild(svc);
+                                        left.appendChild(pat);
+                                        li.appendChild(left);
+                                        tvQueueList.appendChild(li);
+                                    }
+                                    
+                                    // If no patients in waiting queue (only current patient)
+                                    if (data.queue.length === 1) {
+                                        tvQueueList.innerHTML = '<div class="waiting-message">No patients in waiting queue</div>';
+                                    }
+                                } else {
+                                    tvQueueList.innerHTML = '<div class="waiting-message">No patients in queue</div>';
+                                }
+                            }
+                            
+                            // Listen for messages from the main system
+                            window.addEventListener('message', function(event) {
+                                if (event.data) {
+                                    updateTVDisplay(event.data);
+                                }
+                            });
+                            
+                            // Request initial data
+                            if (window.opener && !window.opener.closed) {
+                                window.opener.postMessage('requestData', '*');
+                            }
+                        <\/script>
+                    </body>
+                    </html>
+                `);
+                tvDisplayWindow.document.close();
+                
+                // Set up the unload event to clear the reference
+                tvDisplayWindow.onbeforeunload = function() {
+                    tvDisplayWindow = null;
+                };
+                
+                showNotification('TV Display opened in new tab');
+                
+                // Update TV display with current data after a short delay to ensure the window is ready
+                setTimeout(updateTVDisplay, 500);
+            });
+
+            // Listen for messages from TV display
+            window.addEventListener('message', function(event) {
+                if (event.data === 'requestData') {
+                    updateTVDisplay();
+                }
+            });
+
             // Login
             loginBtn.addEventListener('click', function() {
                 const username = usernameInput.value.trim();
@@ -795,8 +1807,8 @@
                     mainSystem.style.display = 'block';
                     showNotification('Login successful! Welcome to Anchor Lab System');
                     
-                    // Load any saved data for today
-                    loadTodayData();
+                    // Update queue controls based on current system state
+                    updateQueueControls();
                 } else {
                     showNotification('Invalid username or password. Please try again.', true);
                 }
@@ -852,20 +1864,13 @@
             // Start queue
             startQueueBtn.addEventListener('click', function() {
                 isQueueStarted = true;
-                startQueueBtn.textContent = ' Queue Started';
-                startQueueBtn.innerHTML = '<i class="fas fa-check-circle"></i> Queue Started';
-                startQueueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
+                saveToFirebase();
                 showNotification('Queue has been started! Patients can now be added.');
-                
-                // Save data after starting queue
-                saveTodayData();
             });
 
             // Next patient (call) - UPDATED WITH ROOM ANNOUNCEMENTS
             nextBtn.addEventListener('click', function() {
                 if (queue.length === 0) {
-                    currentNumber.textContent = '--';
-                    currentService.textContent = 'No patients in queue';
                     showNotification('No patients in the queue', true);
                     return;
                 }
@@ -878,17 +1883,10 @@
                     allPatients[patientIndex].status = 'Served';
                 }
 
-                // Update display
-                currentNumber.textContent = nextPatient.number;
-                currentService.textContent = nextPatient.service + (nextPatient.name ? ' — ' + nextPatient.name : '');
-
-                // Update queue display
-                updateQueueDisplay();
+                // Save to Firebase (this will trigger real-time updates on all devices)
+                saveToFirebase();
 
                 showNotification('Now serving patient: ' + nextPatient.number);
-                
-                // Save data after serving patient
-                saveTodayData();
 
                 // Voice announcement with room number - UPDATED WITH ROOM
                 const spokenNumber = parseInt(nextPatient.number, 10) || nextPatient.number;
@@ -1070,24 +2068,8 @@
                 patientAgeInput.value = '';
                 patientGenderSelect.value = '';
 
-                // Update ticket preview to show NEXT available ticket
-                ticketNumber.textContent = String(lastIssuedNumber + 1).padStart(3, '0');
-                
-                // Keep the service displayed if one is selected
-                if (selectedService || lastService) {
-                    ticketService.textContent = selectedService || lastService;
-                } else {
-                    ticketService.textContent = 'Please select a service';
-                }
-                
-                // Reset patient info in ticket preview
-                ticketPatient.textContent = 'Patient: —';
-
-                // Update display queue
-                updateQueueDisplay();
-                
-                // Save data after adding patient
-                saveTodayData();
+                // Save to Firebase (this will trigger real-time updates on all devices)
+                saveToFirebase();
 
                 showNotification('Ticket ' + number + ' added to ' + (selectedService || lastService) + ' queue');
             });
@@ -1178,9 +2160,22 @@
                 window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             });
             
-            // Save today's data
+            // Save today's data to localStorage
             saveBackupBtn.addEventListener('click', function() {
-                saveTodayData();
+                const today = new Date();
+                const todayKey = formatDateForInput(today);
+                const dataToSave = {
+                    queue: queue,
+                    allPatients: allPatients,
+                    lastIssuedNumber: lastIssuedNumber,
+                    isQueueStarted: isQueueStarted,
+                    timestamp: new Date().toISOString()
+                };
+                
+                localStorage.setItem(`queueData_${todayKey}`, JSON.stringify(dataToSave));
+                updateBackupStats();
+                showNotification(`Data saved for ${formatDateForDisplay(todayKey)}`);
+                
                 debugStoredData();
             });
             
@@ -1219,74 +2214,6 @@
                 backupSection.style.display = 'none';
             });
             
-            // Export data as shareable file
-            exportShareBtn.addEventListener('click', function() {
-                const today = new Date();
-                const todayKey = formatDateForInput(today);
-                const dataToExport = {
-                    date: todayKey,
-                    allPatients: allPatients,
-                    queue: queue,
-                    lastIssuedNumber: lastIssuedNumber,
-                    isQueueStarted: isQueueStarted,
-                    exportedAt: new Date().toISOString(),
-                    system: "Anchor Lab Queuing System"
-                };
-                
-                const dataStr = JSON.stringify(dataToExport, null, 2);
-                const blob = new Blob([dataStr], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `anchor_lab_shared_data_${todayKey}.json`;
-                link.click();
-                URL.revokeObjectURL(url);
-                
-                showNotification('Data exported as shareable file! Staff can import this file.');
-            });
-
-            // Import shared file
-            importShareBtn.addEventListener('click', function() {
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.accept = '.json';
-                fileInput.addEventListener('change', function(e) {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            try {
-                                const importedData = JSON.parse(e.target.result);
-                                
-                                // Validate the imported data
-                                if (importedData.allPatients && Array.isArray(importedData.allPatients)) {
-                                    if (confirm(`This will import ${importedData.allPatients.length} patients. Continue?`)) {
-                                        // Replace current data with imported data
-                                        allPatients = importedData.allPatients;
-                                        queue = importedData.queue || [];
-                                        lastIssuedNumber = importedData.lastIssuedNumber || 0;
-                                        isQueueStarted = importedData.isQueueStarted || false;
-                                        
-                                        // Update displays
-                                        updateQueueDisplay();
-                                        updateDemographicsTable();
-                                        saveTodayData();
-                                        
-                                        showNotification(`Successfully imported ${importedData.allPatients.length} patients from shared file`);
-                                    }
-                                } else {
-                                    showNotification('Invalid data file format', true);
-                                }
-                            } catch (error) {
-                                showNotification('Error reading file: ' + error.message, true);
-                            }
-                        };
-                        reader.readAsText(file);
-                    }
-                });
-                fileInput.click();
-            });
-            
             // Debug button
             debugBtn.addEventListener('click', function() {
                 debugStoredData();
@@ -1294,14 +2221,8 @@
 
             // Logout
             logoutBtn.addEventListener('click', function() {
-                // Save data before logging out
-                saveTodayData();
-                
-                // Reset system state
+                // Reset system state locally
                 isQueueStarted = false;
-                queue = [];
-                allPatients = [];
-                lastIssuedNumber = 0;
                 selectedService = null;
                 lastService = null;
 
@@ -1309,11 +2230,6 @@
                 ticketNumber.textContent = '--';
                 ticketService.textContent = 'Please select a service';
                 ticketPatient.textContent = 'Patient: —';
-                currentNumber.textContent = '--';
-                currentService.textContent = 'Please wait for your number';
-                queueList.innerHTML = '<li class="queue-item">No patients in queue</li>';
-                demographicsSection.style.display = 'none';
-                backupSection.style.display = 'none';
 
                 // Reset service buttons
                 serviceButtons.forEach(btn => btn.classList.remove('active'));
@@ -1344,6 +2260,9 @@
             ticketPatient.textContent = 'Patient: —';
             queueList.innerHTML = '<li class="queue-item">No patients in queue</li>';
             updateBackupStats();
+            
+            // FIX: Initialize public display
+            updatePublicDisplay();
         });
     </script>
 </body>
