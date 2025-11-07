@@ -570,71 +570,67 @@
             max-width: 200px; 
         }
         
-        /* Backup Section */
-        .backup-section { 
-            display: none; 
-            margin-top: 30px; 
+        /* NEW: Service-specific next buttons */
+        .next-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
         }
-        .backup-btn { 
-            background:linear-gradient(135deg,#ff9800 0%,#e65100 100%); 
-            max-width: 280px; 
-            margin: 20px 0; 
-        }
-        .backup-panel { 
-            background:white; 
-            border-radius:12px; 
-            box-shadow:0 5px 15px rgba(0,0,0,0.08); 
-            margin-bottom:30px; 
-            padding:30px; 
-            overflow:hidden; 
-            border:1px solid #e0e0e0; 
-        }
-        .backup-controls { 
-            display: flex; 
-            gap: 15px; 
-            margin-top: 20px; 
-            flex-wrap: wrap; 
-        }
-        .save-backup-btn { 
-            background:linear-gradient(135deg,#4caf50 0%,#2e7d32 100%); 
-            max-width: 200px; 
-        }
-        .load-backup-btn { 
-            background:linear-gradient(135deg,#2196f3 0%,#0d47a1 100%); 
-            max-width: 200px; 
-        }
-        .date-selector { 
-            display: flex; 
-            gap: 15px; 
-            margin: 20px 0; 
-            align-items: center; 
-            flex-wrap: wrap; 
-        }
-        .date-selector label { 
-            font-weight: 600; 
-            color: #495057; 
-        }
-        .date-selector input { 
-            padding: 10px; 
-            border: 2px solid #dee2e6; 
-            border-radius: 8px; 
-        }
-        .backup-stats { 
-            background: #f8f9fa; 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin-top: 20px; 
-        }
-        .backup-stats h4 { 
-            color: #1a6fa0; 
-            margin-bottom: 10px; 
+        .next-service-btn {
+            background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
+            padding: 12px 16px;
+            font-size: 14px;
         }
         
-        /* Debug button */
-        .debug-btn { 
-            background:linear-gradient(135deg,#607d8b 0%,#37474f 100%); 
-            max-width: 200px; 
-            margin: 10px 0; 
+        /* NEW: Recently called patients section */
+        .recently-called-section {
+            margin-top: 30px;
+            display: block; /* Always visible */
+        }
+        .recently-called-list {
+            list-style: none;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .recently-called-item {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #4caf50;
+        }
+        .recently-called-item .left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .recently-called-number {
+            font-weight: 700;
+            font-size: 18px;
+            color: #2e7d32;
+            margin-right: 10px;
+        }
+        .recently-called-service {
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .recently-called-name {
+            color: #333;
+            font-size: 13px;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+        .recently-called-time {
+            color: #777;
+            font-size: 12px;
+            font-style: italic;
         }
         
         @media (max-width:900px) { 
@@ -854,6 +850,14 @@
                     <div class="current-service" id="publicCurrentService">Please wait for your number</div>
                     <div class="current-patient" id="publicCurrentPatient"></div>
                 </div>
+                
+                <!-- NEW: Recently Called Patients Section -->
+                <div class="recently-called-section">
+                    <h3><i class="fas fa-history"></i> Recently Called Patients</h3>
+                    <ul class="recently-called-list" id="recentlyCalledList">
+                        <li class="recently-called-item">No patients called yet</li>
+                    </ul>
+                </div>
 
                 <h3><i class="fas fa-clock"></i> Waiting Queue</h3>
                 <ul class="queue-list" id="publicQueueList">
@@ -898,7 +902,7 @@
                         <li>Enter patient Name, Age and Gender first.</li>
                         <li>Select a medical service (this requires patient details).</li>
                         <li>Click the ticket preview to print and add the patient to the queue.</li>
-                        <li>Click "Next Patient" when ready to call the next person.</li>
+                        <li>Click "Next Patient" for the specific service when ready to call the next person.</li>
                     </ol>
                 </div>
 
@@ -952,14 +956,15 @@
 
                 <div class="queue-controls">
                     <button class="control-btn start-btn" id="startQueueBtn"><i class="fas fa-play-circle"></i> Start Queue</button>
-                    <button class="control-btn next-btn" id="nextBtn"><i class="fas fa-forward"></i> Next Patient</button>
+                    <!-- Single Next button removed - now using service-specific buttons -->
+                </div>
+                
+                <!-- NEW: Service-specific Next buttons -->
+                <div class="next-buttons-grid" id="nextButtonsGrid">
+                    <!-- Buttons will be generated dynamically -->
                 </div>
 
                 <button class="demographics-btn" id="demographicsBtn"><i class="fas fa-chart-bar"></i> View Demographics</button>
-                
-                <button class="backup-btn" id="backupBtn"><i class="fas fa-database"></i> Backup & Restore Data</button>
-                
-                <button class="debug-btn" id="debugBtn"><i class="fas fa-bug"></i> Debug Data (Console)</button>
 
                 <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
@@ -983,6 +988,14 @@
                     <div class="current-number" id="currentNumber">--</div>
                     <div class="current-service" id="currentService">Please wait for your number</div>
                     <div class="current-patient" id="currentPatient"></div>
+                </div>
+                
+                <!-- NEW: Recently Called Patients Section in Staff Panel -->
+                <div class="recently-called-section">
+                    <h3><i class="fas fa-history"></i> Recently Called Patients</h3>
+                    <ul class="recently-called-list" id="staffRecentlyCalledList">
+                        <li class="recently-called-item">No patients called yet</li>
+                    </ul>
                 </div>
 
                 <h3><i class="fas fa-clock"></i> Waiting Queue</h3>
@@ -1026,68 +1039,6 @@
                             <i class="fas fa-download"></i> Download Data
                         </button>
                         <button class="close-demographics-btn" id="closeDemographicsBtn">
-                            <i class="fas fa-times"></i> Close
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Backup Section -->
-            <div class="backup-section" id="backupSection">
-                <div class="backup-panel">
-                    <div class="panel-header">
-                        <i class="fas fa-database"></i>
-                        <h2>Daily Data Backup & Restore</h2>
-                    </div>
-                    
-                    <p>Save today's patient data or load data from a previous day.</p>
-                    
-                    <div class="backup-controls">
-                        <button class="save-backup-btn" id="saveBackupBtn">
-                            <i class="fas fa-save"></i> Save Today's Data
-                        </button>
-                        <button class="load-backup-btn" id="loadBackupBtn">
-                            <i class="fas fa-folder-open"></i> Load Data
-                        </button>
-                    </div>
-                    
-                    <div class="date-selector">
-                        <label for="backupDate">Select Date:</label>
-                        <input type="date" id="backupDate">
-                    </div>
-                    
-                    <div class="backup-stats" id="backupStats">
-                        <h4>Data Statistics</h4>
-                        <p>Total Patients: <span id="totalPatients">0</span></p>
-                        <p>Services Today: <span id="servicesToday">0</span></p>
-                        <p>Last Backup: <span id="lastBackup">Never</span></p>
-                    </div>
-                    
-                    <table class="demographics-table" id="backupTable">
-                        <thead>
-                            <tr>
-                                <th>Ticket No.</th>
-                                <th>Patient Name</th>
-                                <th>Age</th>
-                                <th>Gender</th>
-                                <th>Service</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="backupTableBody">
-                            <!-- Data will be populated here -->
-                        </tbody>
-                    </table>
-                    
-                    <div class="demographics-actions">
-                        <button class="print-demographics-btn" id="printBackupBtn">
-                            <i class="fas fa-print"></i> Print Backup Data
-                        </button>
-                        <button class="download-demographics-btn" id="downloadBackupBtn">
-                            <i class="fas fa-download"></i> Download Backup
-                        </button>
-                        <button class="close-demographics-btn" id="closeBackupBtn">
                             <i class="fas fa-times"></i> Close
                         </button>
                     </div>
@@ -1140,7 +1091,7 @@
             const ticketService = document.getElementById('ticketService');
             const ticketPreview = document.getElementById('ticketPreview');
             const startQueueBtn = document.getElementById('startQueueBtn');
-            const nextBtn = document.getElementById('nextBtn');
+            const nextButtonsGrid = document.getElementById('nextButtonsGrid');
             const currentNumber = document.getElementById('currentNumber');
             const currentService = document.getElementById('currentService');
             const currentPatient = document.getElementById('currentPatient');
@@ -1155,6 +1106,10 @@
             const publicCurrentPatient = document.getElementById('publicCurrentPatient');
             const publicQueueList = document.getElementById('publicQueueList');
             
+            // NEW: Recently called patients lists
+            const recentlyCalledList = document.getElementById('recentlyCalledList');
+            const staffRecentlyCalledList = document.getElementById('staffRecentlyCalledList');
+            
             // Daily Stats elements
             const todayPatientCount = document.getElementById('todayPatientCount');
             const todayServicesCount = document.getElementById('todayServicesCount');
@@ -1168,23 +1123,6 @@
             const printDemographicsBtn = document.getElementById('printDemographicsBtn');
             const downloadDemographicsBtn = document.getElementById('downloadDemographicsBtn');
             const closeDemographicsBtn = document.getElementById('closeDemographicsBtn');
-            
-            // Backup elements
-            const backupBtn = document.getElementById('backupBtn');
-            const backupSection = document.getElementById('backupSection');
-            const saveBackupBtn = document.getElementById('saveBackupBtn');
-            const loadBackupBtn = document.getElementById('loadBackupBtn');
-            const backupDateInput = document.getElementById('backupDate');
-            const backupTableBody = document.getElementById('backupTableBody');
-            const printBackupBtn = document.getElementById('printBackupBtn');
-            const downloadBackupBtn = document.getElementById('downloadBackupBtn');
-            const closeBackupBtn = document.getElementById('closeBackupBtn');
-            const totalPatientsSpan = document.getElementById('totalPatients');
-            const servicesTodaySpan = document.getElementById('servicesToday');
-            const lastBackupSpan = document.getElementById('lastBackup');
-            
-            // Debug button
-            const debugBtn = document.getElementById('debugBtn');
 
             // Patient fields
             const patientNameInput = document.getElementById('patientName');
@@ -1192,16 +1130,26 @@
             const patientGenderSelect = document.getElementById('patientGender');
             const ticketPatient = document.getElementById('ticketPatient');
 
-            // System State
+            // System State - UPDATED: Now with service-specific numbering
             let isQueueStarted = false;
-            let queue = [];
+            let queues = {}; // Now an object with service names as keys
             let allPatients = []; // All historical patients
             let todayPatients = []; // Patients for today only
-            let lastIssuedNumber = 0;
+            let lastIssuedNumbers = {}; // Track last number for each service
             let selectedService = null;
             let lastService = null;
-            let currentServingPatient = null;
+            let currentDisplayPatient = null; // UPDATED: Track the patient to display in the main screen
+            let recentlyCalledPatients = []; // Track recently called patients
             let currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+            // Initialize service-specific data
+            const services = ["2D Echo", "X-Ray", "Drug Test", "Ultrasound", "Blood Test", "ECG", "Dental", "CBC"];
+            
+            // Initialize queues and numbering for each service
+            services.forEach(service => {
+                queues[service] = [];
+                lastIssuedNumbers[service] = 0;
+            });
 
             // Staff credentials
             const staffCredentials = [
@@ -1226,7 +1174,124 @@
             const queueRef = database.ref('queue');
             const systemRef = database.ref('system');
 
-            // NEW: Check if it's a new day and reset numbering if needed
+            // NEW: Create service-specific Next buttons
+            function createNextButtons() {
+                nextButtonsGrid.innerHTML = '';
+                services.forEach(service => {
+                    const button = document.createElement('button');
+                    button.className = 'next-service-btn';
+                    button.setAttribute('data-service', service);
+                    button.innerHTML = `<i class="fas fa-forward"></i> Next ${service}`;
+                    nextButtonsGrid.appendChild(button);
+                    
+                    // Add event listener for this button
+                    button.addEventListener('click', function() {
+                        callNextPatient(service);
+                    });
+                });
+            }
+
+            // NEW: Call next patient for a specific service
+            function callNextPatient(service) {
+                if (queues[service].length === 0) {
+                    showNotification(`No patients in the ${service} queue`, true);
+                    return;
+                }
+
+                // Remove from queue
+                const nextPatient = queues[service].shift();
+                
+                // UPDATED: Set this patient as the current display patient
+                currentDisplayPatient = nextPatient;
+                
+                // Update patient status to 'Served' in allPatients and todayPatients
+                const patientIndex = allPatients.findIndex(p => p.number === nextPatient.number && p.service === service);
+                if (patientIndex !== -1) {
+                    allPatients[patientIndex].status = 'Served';
+                }
+                
+                const todayPatientIndex = todayPatients.findIndex(p => p.number === nextPatient.number && p.service === service);
+                if (todayPatientIndex !== -1) {
+                    todayPatients[todayPatientIndex].status = 'Served';
+                }
+
+                // NEW: Add to recently called patients list
+                const calledPatient = {
+                    ...nextPatient,
+                    calledTime: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                };
+                recentlyCalledPatients.unshift(calledPatient);
+                
+                // Keep only the last 10 called patients
+                if (recentlyCalledPatients.length > 10) {
+                    recentlyCalledPatients.pop();
+                }
+                
+                // Update the recently called patients display
+                updateRecentlyCalledDisplay();
+
+                // Save to Firebase (this will trigger real-time updates on all devices)
+                saveToFirebase();
+
+                showNotification(`Now serving ${service} patient: ${nextPatient.number}`);
+
+                // Voice announcement with room number
+                const spokenNumber = parseInt(nextPatient.number, 10) || nextPatient.number;
+                const room = serviceRooms[service] || "Room 1";
+                announce(`Patient number ${spokenNumber} for ${service}, please proceed to ${room}. Thank you`);
+                
+                // Update the main display with the called patient
+                updateAllDisplays();
+            }
+
+            // NEW: Update recently called patients display
+            function updateRecentlyCalledDisplay() {
+                // Update public recently called list
+                updateRecentlyCalledList(recentlyCalledList);
+                
+                // Update staff recently called list
+                updateRecentlyCalledList(staffRecentlyCalledList);
+            }
+
+            // NEW: Update individual recently called list
+            function updateRecentlyCalledList(listElement) {
+                if (recentlyCalledPatients.length === 0) {
+                    listElement.innerHTML = '<li class="recently-called-item">No patients called yet</li>';
+                    return;
+                }
+
+                listElement.innerHTML = '';
+                
+                recentlyCalledPatients.forEach(patient => {
+                    const li = document.createElement('li');
+                    li.className = 'recently-called-item';
+                    const left = document.createElement('div');
+                    left.className = 'left';
+                    const num = document.createElement('div');
+                    num.className = 'recently-called-number';
+                    num.textContent = patient.number;
+                    const svc = document.createElement('div');
+                    svc.className = 'recently-called-service';
+                    svc.textContent = patient.service;
+                    const pat = document.createElement('div');
+                    pat.className = 'recently-called-name';
+                    pat.textContent = `${patient.name} • ${patient.age} yrs • ${patient.gender}`;
+                    const time = document.createElement('div');
+                    time.className = 'recently-called-time';
+                    time.textContent = patient.calledTime || '';
+                    
+                    left.appendChild(num);
+                    left.appendChild(svc);
+                    left.appendChild(pat);
+                    
+                    li.appendChild(left);
+                    li.appendChild(time);
+                    
+                    listElement.appendChild(li);
+                });
+            }
+
+            // NEW: Check and reset daily numbering for all services
             function checkAndResetDailyNumbering() {
                 const today = new Date().toISOString().split('T')[0];
                 
@@ -1235,28 +1300,36 @@
                     const storedDate = snapshot.val();
                     
                     if (storedDate !== today) {
-                        // It's a new day! Reset the numbering
-                        console.log('New day detected! Resetting numbering...');
-                        lastIssuedNumber = 0;
-                        queue = [];
+                        // It's a new day! Reset the numbering for all services
+                        console.log('New day detected! Resetting numbering for all services...');
+                        
+                        services.forEach(service => {
+                            queues[service] = [];
+                            lastIssuedNumbers[service] = 0;
+                        });
+                        
                         todayPatients = [];
+                        recentlyCalledPatients = []; // NEW: Reset recently called patients
+                        currentDisplayPatient = null; // UPDATED: Reset current display patient
                         isQueueStarted = false;
-                        currentServingPatient = null;
                         
                         // Update Firebase with new date and reset data
                         systemRef.set({
                             currentDate: today,
-                            lastIssuedNumber: 0
+                            lastIssuedNumbers: lastIssuedNumbers
                         });
                         
                         // Also update the queue data
                         saveToFirebase();
                         
-                        showNotification('New day started! Numbering reset to 1.');
+                        showNotification('New day started! Numbering reset for all services.');
                     } else {
-                        // Load the last issued number for today
-                        systemRef.child('lastIssuedNumber').once('value').then((numSnapshot) => {
-                            lastIssuedNumber = numSnapshot.val() || 0;
+                        // Load the last issued numbers for today
+                        systemRef.child('lastIssuedNumbers').once('value').then((numSnapshot) => {
+                            const storedNumbers = numSnapshot.val();
+                            if (storedNumbers) {
+                                lastIssuedNumbers = storedNumbers;
+                            }
                             updateTicketPreview();
                         });
                     }
@@ -1290,15 +1363,16 @@
                     });
             }
 
-            // Improved saveToFirebase function with better error handling
+            // Improved saveToFirebase function with service-specific data
             function saveToFirebase() {
                 const dataToSave = {
-                    queue: queue,
+                    queues: queues,
                     allPatients: allPatients,
                     todayPatients: todayPatients,
-                    lastIssuedNumber: lastIssuedNumber,
+                    lastIssuedNumbers: lastIssuedNumbers,
                     isQueueStarted: isQueueStarted,
-                    currentServingPatient: currentServingPatient,
+                    currentDisplayPatient: currentDisplayPatient, // UPDATED: Save current display patient
+                    recentlyCalledPatients: recentlyCalledPatients, // Save recently called patients
                     timestamp: new Date().toISOString()
                 };
                 
@@ -1308,8 +1382,8 @@
                     .then(() => {
                         console.log('✓ Data saved to Firebase successfully');
                         
-                        // Also save the current lastIssuedNumber to system node
-                        systemRef.child('lastIssuedNumber').set(lastIssuedNumber);
+                        // Also save the current lastIssuedNumbers to system node
+                        systemRef.child('lastIssuedNumbers').set(lastIssuedNumbers);
                     })
                     .catch((error) => {
                         console.error('✗ Error saving to Firebase:', error);
@@ -1334,17 +1408,25 @@
                 console.log('Firebase data received:', data);
                 
                 if (data) {
-                    queue = data.queue || [];
+                    queues = data.queues || {};
                     allPatients = data.allPatients || [];
                     todayPatients = data.todayPatients || [];
-                    lastIssuedNumber = data.lastIssuedNumber || 0;
+                    lastIssuedNumbers = data.lastIssuedNumbers || {};
                     isQueueStarted = data.isQueueStarted || false;
-                    currentServingPatient = data.currentServingPatient || null;
+                    currentDisplayPatient = data.currentDisplayPatient || null; // UPDATED: Load current display patient
+                    recentlyCalledPatients = data.recentlyCalledPatients || []; // Load recently called patients
+                    
+                    // Initialize any missing services
+                    services.forEach(service => {
+                        if (!queues[service]) queues[service] = [];
+                        if (!lastIssuedNumbers[service]) lastIssuedNumbers[service] = 0;
+                    });
                     
                     // Update ALL displays
                     updateAllDisplays();
                     updateTicketPreview();
                     updateDailyStats();
+                    updateRecentlyCalledDisplay(); // NEW: Update recently called display
                     
                     // Update staff panel if logged in
                     if (mainSystem.style.display === 'block') {
@@ -1353,7 +1435,7 @@
                 }
             });
 
-            // NEW: Update daily statistics
+            // NEW: Update daily statistics with service-specific data
             function updateDailyStats() {
                 // Count patients for today
                 todayPatientCount.textContent = todayPatients.length;
@@ -1366,8 +1448,12 @@
                 const servedToday = todayPatients.filter(p => p.status === 'Served').length;
                 servedTodayCount.textContent = servedToday;
                 
-                // Count waiting patients
-                waitingCount.textContent = queue.length;
+                // Count waiting patients across all services
+                let totalWaiting = 0;
+                services.forEach(service => {
+                    totalWaiting += queues[service].length;
+                });
+                waitingCount.textContent = totalWaiting;
             }
 
             // Update ALL displays at once
@@ -1377,14 +1463,12 @@
                 updateQueueLists();
             }
 
-            // Update public display - NOW ONLY SHOWS WHEN NEXT PATIENT IS CLICKED
+            // UPDATED: Update public display - NOW SHOWS THE CURRENT DISPLAY PATIENT
             function updatePublicDisplay() {
-                if (currentServingPatient) {
-                    console.log('Updating public display with current serving:', currentServingPatient);
-                    
-                    publicCurrentNumber.textContent = currentServingPatient.number;
-                    publicCurrentService.textContent = currentServingPatient.service;
-                    publicCurrentPatient.textContent = `${currentServingPatient.name} • ${currentServingPatient.age} yrs • ${currentServingPatient.gender}`;
+                if (currentDisplayPatient) {
+                    publicCurrentNumber.textContent = currentDisplayPatient.number;
+                    publicCurrentService.textContent = currentDisplayPatient.service;
+                    publicCurrentPatient.textContent = `${currentDisplayPatient.name} • ${currentDisplayPatient.age} yrs • ${currentDisplayPatient.gender}`;
                 } else {
                     publicCurrentNumber.textContent = '--';
                     publicCurrentService.textContent = 'Please wait for your number';
@@ -1392,14 +1476,12 @@
                 }
             }
 
-            // Update staff display - NOW ONLY SHOWS WHEN NEXT PATIENT IS CLICKED
+            // UPDATED: Update staff display - NOW SHOWS THE CURRENT DISPLAY PATIENT
             function updateStaffDisplay() {
-                if (currentServingPatient) {
-                    console.log('Updating staff display with current serving:', currentServingPatient);
-                    
-                    currentNumber.textContent = currentServingPatient.number;
-                    currentService.textContent = currentServingPatient.service;
-                    currentPatient.textContent = `${currentServingPatient.name} • ${currentServingPatient.age} yrs • ${currentServingPatient.gender}`;
+                if (currentDisplayPatient) {
+                    currentNumber.textContent = currentDisplayPatient.number;
+                    currentService.textContent = currentDisplayPatient.service;
+                    currentPatient.textContent = `${currentDisplayPatient.name} • ${currentDisplayPatient.age} yrs • ${currentDisplayPatient.gender}`;
                 } else {
                     currentNumber.textContent = '--';
                     currentService.textContent = 'No patients in queue';
@@ -1407,7 +1489,7 @@
                 }
             }
 
-            // Update queue lists
+            // Update queue lists - NOW COMBINES ALL SERVICES
             function updateQueueLists() {
                 // Update public queue list
                 updateQueueList(publicQueueList);
@@ -1415,16 +1497,32 @@
                 updateQueueList(queueList);
             }
 
-            // Update individual queue list
+            // Update individual queue list - NOW COMBINES ALL SERVICES
             function updateQueueList(queueListElement) {
-                if (queue.length === 0) {
+                // Combine all queues
+                let allQueues = [];
+                services.forEach(service => {
+                    queues[service].forEach(patient => {
+                        allQueues.push(patient);
+                    });
+                });
+                
+                // Sort by service and then by number
+                allQueues.sort((a, b) => {
+                    if (a.service === b.service) {
+                        return parseInt(a.number) - parseInt(b.number);
+                    }
+                    return a.service.localeCompare(b.service);
+                });
+
+                if (allQueues.length === 0) {
                     queueListElement.innerHTML = '<li class="queue-item">No patients in queue</li>';
                     return;
                 }
 
                 queueListElement.innerHTML = '';
                 
-                queue.forEach(patient => {
+                allQueues.forEach(patient => {
                     const li = document.createElement('li');
                     li.className = 'queue-item';
                     const left = document.createElement('div');
@@ -1450,8 +1548,9 @@
             // Update ticket preview based on current state
             function updateTicketPreview() {
                 if (selectedService || lastService) {
-                    ticketService.textContent = selectedService || lastService;
-                    ticketNumber.textContent = String(lastIssuedNumber + 1).padStart(3, '0');
+                    const service = selectedService || lastService;
+                    ticketService.textContent = service;
+                    ticketNumber.textContent = String(lastIssuedNumbers[service] + 1).padStart(3, '0');
                     
                     // Update patient info in ticket if available
                     const name = patientNameInput.value.trim();
@@ -1479,23 +1578,6 @@
                     startQueueBtn.style.background = 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)';
                 }
             }
-
-            // Helper function to format date for input (YYYY-MM-DD)
-            function formatDateForInput(date) {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
-
-            // Helper function to format date for display
-            function formatDateForDisplay(dateString) {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('en-US');
-            }
-
-            // Initialize backup date to today
-            backupDateInput.value = formatDateForInput(new Date());
 
             // Voice announcement function (Web Speech API)
             function announce(text) {
@@ -1556,103 +1638,6 @@
                 showNotification('Data downloaded successfully!');
             }
 
-            // Load today's data from localStorage
-            function loadTodayData() {
-                const today = new Date();
-                const todayKey = formatDateForInput(today);
-                loadDataForDate(todayKey);
-            }
-
-            // Load data for a specific date
-            function loadDataForDate(date) {
-                console.log('Loading data for date:', date);
-                
-                let searchDate = date;
-                if (!date.includes('-')) {
-                    const dateParts = date.split('/');
-                    if (dateParts.length === 3) {
-                        searchDate = `${dateParts[2]}-${dateParts[0].padStart(2, '0')}-${dateParts[1].padStart(2, '0')}`;
-                    }
-                }
-                
-                const savedData = localStorage.getItem(`queueData_${searchDate}`);
-                console.log('Looking for key:', `queueData_${searchDate}`);
-                
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    
-                    // Update backup table
-                    backupTableBody.innerHTML = '';
-                    if (data.allPatients && data.allPatients.length > 0) {
-                        data.allPatients.forEach(patient => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${patient.number}</td>
-                                <td>${patient.name}</td>
-                                <td>${patient.age}</td>
-                                <td>${patient.gender}</td>
-                                <td>${patient.service}</td>
-                                <td>${patient.status || 'Unknown'}</td>
-                                <td>${patient.date || 'Unknown'}</td>
-                            `;
-                            backupTableBody.appendChild(row);
-                        });
-                        showNotification(`Data loaded for ${formatDateForDisplay(searchDate)} - ${data.allPatients.length} patients found`);
-                    } else {
-                        backupTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No data available for this date</td></tr>';
-                        showNotification('No patient data found for the selected date', true);
-                    }
-                } else {
-                    backupTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No data available for this date</td></tr>';
-                    showNotification('No data found for the selected date', true);
-                }
-                
-                updateBackupStats();
-            }
-
-            // Update backup statistics
-            function updateBackupStats() {
-                const today = new Date();
-                const todayKey = formatDateForInput(today);
-                const savedData = localStorage.getItem(`queueData_${todayKey}`);
-                
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    totalPatientsSpan.textContent = data.allPatients ? data.allPatients.length : 0;
-                    
-                    if (data.allPatients && data.allPatients.length > 0) {
-                        const services = new Set(data.allPatients.map(p => p.service));
-                        servicesTodaySpan.textContent = services.size;
-                    } else {
-                        servicesTodaySpan.textContent = 0;
-                    }
-                    
-                    lastBackupSpan.textContent = new Date(data.timestamp).toLocaleString();
-                } else {
-                    totalPatientsSpan.textContent = allPatients.length;
-                    const services = new Set(allPatients.map(p => p.service));
-                    servicesTodaySpan.textContent = services.size;
-                    lastBackupSpan.textContent = 'Never';
-                }
-            }
-
-            // Debug function to see all stored data
-            function debugStoredData() {
-                console.log('=== ALL STORED DATA ===');
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key.startsWith('queueData_')) {
-                        console.log(key, localStorage.getItem(key));
-                    }
-                }
-                console.log('=== CURRENT QUEUE ===', queue);
-                console.log('=== ALL PATIENTS ===', allPatients);
-                console.log('=== TODAY PATIENTS ===', todayPatients);
-                console.log('=== CURRENT SERVING ===', currentServingPatient);
-                console.log('=== END DEBUG DATA ===');
-                showNotification('Check browser console for stored data');
-            }
-
             // Login
             loginBtn.addEventListener('click', function() {
                 const username = usernameInput.value.trim();
@@ -1663,6 +1648,9 @@
                     document.querySelector('.content').style.display = 'none';
                     mainSystem.style.display = 'block';
                     showNotification('Login successful! Welcome to Anchor Lab System');
+                    
+                    // Create service-specific next buttons
+                    createNextButtons();
                     
                     // Check for daily reset and update UI
                     checkAndResetDailyNumbering();
@@ -1713,8 +1701,8 @@
                     const gender = patientGenderSelect.value;
                     ticketPatient.textContent = `Patient: ${name} • ${age} yrs • ${gender}`;
 
-                    // show the next ticket number (next to be issued)
-                    ticketNumber.textContent = String(lastIssuedNumber + 1).padStart(3, '0');
+                    // show the next ticket number for this service
+                    ticketNumber.textContent = String(lastIssuedNumbers[selectedService] + 1).padStart(3, '0');
                 });
             });
 
@@ -1725,42 +1713,7 @@
                 showNotification('Queue has been started! Patients can now be added.');
             });
 
-            // Next patient (call) - UPDATED: Now sets currentServingPatient
-            nextBtn.addEventListener('click', function() {
-                if (queue.length === 0) {
-                    showNotification('No patients in the queue', true);
-                    return;
-                }
-
-                // Set the current serving patient to the first in queue
-                currentServingPatient = queue[0];
-                
-                // Remove from queue
-                const nextPatient = queue.shift();
-                
-                // Update patient status to 'Served' in allPatients and todayPatients
-                const patientIndex = allPatients.findIndex(p => p.number === nextPatient.number);
-                if (patientIndex !== -1) {
-                    allPatients[patientIndex].status = 'Served';
-                }
-                
-                const todayPatientIndex = todayPatients.findIndex(p => p.number === nextPatient.number);
-                if (todayPatientIndex !== -1) {
-                    todayPatients[todayPatientIndex].status = 'Served';
-                }
-
-                // Save to Firebase (this will trigger real-time updates on all devices)
-                saveToFirebase();
-
-                showNotification('Now serving patient: ' + nextPatient.number);
-
-                // Voice announcement with room number
-                const spokenNumber = parseInt(nextPatient.number, 10) || nextPatient.number;
-                const room = serviceRooms[nextPatient.service] || "Room 1";
-                announce(`Patient number ${spokenNumber}, ${nextPatient.service}, please proceed to ${room}. Thank you`);
-            });
-
-            // Add to queue when ticket preview clicked
+            // Add to queue when ticket preview clicked - UPDATED: Now service-specific numbering
             ticketPreview.addEventListener('click', function() {
                 if (!selectedService && !lastService) {
                     showNotification('Please select a medical service first.', true);
@@ -1780,13 +1733,15 @@
                     return;
                 }
 
-                // Number to assign is next after lastIssuedNumber
-                const number = String(lastIssuedNumber + 1).padStart(3, '0');
+                const service = selectedService || lastService;
+                
+                // Number to assign is next after lastIssuedNumber for this service
+                const number = String(lastIssuedNumbers[service] + 1).padStart(3, '0');
 
                 // Create patient object with today's date
                 const patient = {
                     number: number,
-                    service: selectedService || lastService,
+                    service: service,
                     name: name,
                     age: age,
                     gender: gender,
@@ -1794,8 +1749,8 @@
                     date: new Date().toISOString().split('T')[0] // Add today's date
                 };
 
-                // Add to queue and patient lists
-                queue.push(patient);
+                // Add to queue for this service and patient lists
+                queues[service].push(patient);
                 allPatients.push(patient);
                 todayPatients.push(patient); // Add to today's patients
 
@@ -1898,7 +1853,7 @@
                         <hr>
                         <h3>QUEUE TICKET</h3>
                         <div class="ticket-number">${number}</div>
-                        <div class="ticket-service">${selectedService || lastService}</div>
+                        <div class="ticket-service">${service}</div>
                         <div class="ticket-patient">Patient: ${name}</div>
                         <div class="ticket-patient">Age: ${age} yrs | Gender: ${gender}</div>
                         <div class="barcode-area">
@@ -1924,8 +1879,8 @@
                     ticketPreview.classList.remove('printing'); 
                 }, 1000);
 
-                // Mark that we've issued this number
-                lastIssuedNumber = lastIssuedNumber + 1;
+                // Mark that we've issued this number for this service
+                lastIssuedNumbers[service] = lastIssuedNumbers[service] + 1;
 
                 // Clear patient inputs so staff can add next patient
                 patientNameInput.value = '';
@@ -1935,14 +1890,13 @@
                 // Save to Firebase (this will trigger real-time updates on all devices)
                 saveToFirebase();
 
-                showNotification('Ticket ' + number + ' added to ' + (selectedService || lastService) + ' queue');
+                showNotification('Ticket ' + number + ' added to ' + service + ' queue');
             });
 
             // Show demographics
             demographicsBtn.addEventListener('click', function() {
                 updateDemographicsTable();
                 demographicsSection.style.display = 'block';
-                backupSection.style.display = 'none';
                 window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             });
 
@@ -1985,82 +1939,13 @@
             closeDemographicsBtn.addEventListener('click', function() {
                 demographicsSection.style.display = 'none';
             });
-            
-            // Show backup section
-            backupBtn.addEventListener('click', function() {
-                backupSection.style.display = 'block';
-                demographicsSection.style.display = 'none';
-                updateBackupStats();
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            });
-            
-            // Save today's data to localStorage
-            saveBackupBtn.addEventListener('click', function() {
-                const today = new Date();
-                const todayKey = formatDateForInput(today);
-                const dataToSave = {
-                    queue: queue,
-                    allPatients: allPatients,
-                    todayPatients: todayPatients,
-                    lastIssuedNumber: lastIssuedNumber,
-                    isQueueStarted: isQueueStarted,
-                    currentServingPatient: currentServingPatient,
-                    timestamp: new Date().toISOString()
-                };
-                
-                localStorage.setItem(`queueData_${todayKey}`, JSON.stringify(dataToSave));
-                updateBackupStats();
-                showNotification(`Data saved for ${formatDateForDisplay(todayKey)}`);
-                
-                debugStoredData();
-            });
-            
-            // Load data for selected date
-            loadBackupBtn.addEventListener('click', function() {
-                const selectedDate = backupDateInput.value;
-                loadDataForDate(selectedDate);
-                debugStoredData();
-            });
-            
-            // Print backup data
-            printBackupBtn.addEventListener('click', function() {
-                window.print();
-            });
-            
-            // Download backup data
-            downloadBackupBtn.addEventListener('click', function() {
-                const selectedDate = backupDateInput.value;
-                const savedData = localStorage.getItem(`queueData_${selectedDate}`);
-                
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    if (data.allPatients && data.allPatients.length > 0) {
-                        const filename = `patient_backup_${selectedDate}.csv`;
-                        downloadCSV(data.allPatients, filename);
-                    } else {
-                        showNotification('No data available for the selected date', true);
-                    }
-                } else {
-                    showNotification('No data found for the selected date', true);
-                }
-            });
-            
-            // Close backup section
-            closeBackupBtn.addEventListener('click', function() {
-                backupSection.style.display = 'none';
-            });
-            
-            // Debug button
-            debugBtn.addEventListener('click', function() {
-                debugStoredData();
-            });
 
             // Logout
             logoutBtn.addEventListener('click', function() {
                 isQueueStarted = false;
                 selectedService = null;
                 lastService = null;
-                currentServingPatient = null;
+                currentDisplayPatient = null;
 
                 ticketNumber.textContent = '--';
                 ticketService.textContent = 'Please select a service';
@@ -2089,11 +1974,14 @@
             ticketNumber.textContent = '--';
             ticketService.textContent = 'Please select a service';
             ticketPatient.textContent = 'Patient: —';
-            updateBackupStats();
             
             // Initialize displays
             updateAllDisplays();
             updateDailyStats();
+            updateRecentlyCalledDisplay(); // NEW: Initialize recently called display
+            
+            // Create service-specific next buttons
+            createNextButtons();
             
             // Check for daily reset and test Firebase connection
             setTimeout(() => {
