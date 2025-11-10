@@ -643,7 +643,7 @@
             } 
         }
         
-        /* ROLL PAPER PRINTING STYLES - UPDATED FOR ROLL PAPER QUEUE TICKETS */
+        /* UPDATED PRINT STYLES FOR SMALLER 58x50mm TICKET WITH BETTER READABILITY */
         @media print { 
             body * { 
                 visibility:hidden; 
@@ -655,81 +655,71 @@
                 position: absolute; 
                 left: 0; 
                 top: 0; 
-                width: 80mm !important; /* Standard receipt paper width */
-                min-height: 120mm !important; /* Increased height for queue ticket */
+                width: 58mm !important; /* Smaller width */
+                min-height: 50mm !important; /* Smaller height */
                 border: none !important; 
                 box-shadow: none !important;
                 margin: 0 !important;
-                padding: 5mm !important;
+                padding: 3mm !important; /* Slightly increased padding */
                 background: white !important;
-                font-size: 12px !important;
+                font-size: 12px !important; /* Increased base font */
                 transform: scale(1) !important;
-                font-family: 'Courier New', monospace !important; /* Better for thermal printers */
+                font-family: 'Arial', sans-serif !important; /* Better readability */
             }
             .ticket-header {
                 flex-direction: column !important;
                 text-align: center !important;
-                margin-bottom: 8px !important;
+                margin-bottom: 4px !important; /* Slightly increased margin */
             }
             .ticket-logo {
-                width: 50px !important; /* Smaller logo for roll paper */
-                height: 50px !important;
-                margin: 0 auto 5px !important;
+                width: 30px !important; /* Slightly larger logo */
+                height: 30px !important;
+                margin: 0 auto 3px !important; /* Slightly increased margin */
             }
             .ticket-title {
-                font-size: 14px !important;
+                font-size: 10px !important; /* Larger title */
                 font-weight: bold !important;
                 line-height: 1.2 !important;
-                margin-bottom: 5px !important;
+                margin-bottom: 3px !important;
             }
             .ticket-preview h3 {
-                font-size: 13px !important;
-                margin: 5px 0 !important;
+                font-size: 11px !important; /* Larger heading */
+                margin: 3px 0 !important; /* Slightly increased margin */
                 border-bottom: 1px dashed #000 !important;
-                padding-bottom: 5px !important;
+                padding-bottom: 3px !important; /* Slightly increased padding */
             }
             .ticket-number {
-                font-size: 42px !important; /* Larger number for queue ticket */
-                margin: 15px 0 !important;
+                font-size: 28px !important; /* Larger number for better visibility */
+                margin: 10px 0 !important; /* Slightly increased margin */
                 font-weight: bold !important;
-                color: #000 !important; /* Black for better thermal printing */
+                color: #000 !important;
+                text-align: center !important; /* Ensure center alignment */
             }
             .ticket-service {
-                font-size: 18px !important;
-                margin-bottom: 8px !important;
+                font-size: 12px !important; /* Larger service text */
+                margin-bottom: 4px !important; /* Slightly increased margin */
                 font-weight: bold !important;
+                text-align: center !important;
             }
             .ticket-patient {
-                font-size: 12px !important;
-                margin-bottom: 5px !important;
-            }
-            
-            /* Add barcode area for queue systems */
-            .barcode-area {
-                margin: 10px 0 !important;
+                font-size: 10px !important; /* Larger patient info */
+                margin-bottom: 3px !important; /* Slightly increased margin */
                 text-align: center !important;
-                border-top: 1px dashed #000 !important;
-                padding-top: 10px !important;
+                font-weight: bold !important; /* Make patient info more readable */
             }
-            .barcode-placeholder {
-                height: 40px !important;
-                border: 1px solid #ccc !important;
-                margin: 5px auto !important;
-                width: 80% !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                font-size: 10px !important;
-                color: #666 !important;
+
+            /* REMOVED: Barcode area completely */
+            .barcode-area, .barcode-placeholder {
+                display: none !important;
             }
             
-            /* Footer with date and time */
+            /* Footer with date and time - made more readable */
             .ticket-footer {
-                font-size: 10px !important;
+                font-size: 8px !important; /* Slightly larger footer */
                 text-align: center !important;
-                margin-top: 10px !important;
+                margin-top: 4px !important; /* Slightly increased margin */
                 border-top: 1px dashed #000 !important;
-                padding-top: 8px !important;
+                padding-top: 4px !important; /* Slightly increased padding */
             }
             
             /* Hide demographics panel when printing ticket */
@@ -791,6 +781,13 @@
         .connection-status.disconnected {
             background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);
             color: white;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            border-top: 1px solid #e0e0e0;
         }
     </style>
 </head>
@@ -1713,7 +1710,7 @@
                 showNotification('Queue has been started! Patients can now be added.');
             });
 
-            // Add to queue when ticket preview clicked - UPDATED: Now service-specific numbering
+            // UPDATED: Add to queue when ticket preview clicked - with improved readability
             ticketPreview.addEventListener('click', function() {
                 if (!selectedService && !lastService) {
                     showNotification('Please select a medical service first.', true);
@@ -1757,7 +1754,7 @@
                 // Visual feedback for printing
                 ticketPreview.classList.add('printing');
                 
-                // Create print window for roll paper
+                // UPDATED: Create print window for smaller 58x50mm paper with better readability
                 const printWindow = window.open('', '_blank');
                 printWindow.document.write(`
                     <!DOCTYPE html>
@@ -1768,78 +1765,64 @@
                             body { 
                                 margin: 0; 
                                 padding: 3mm; 
-                                font-family: 'Courier New', monospace;
-                                width: 80mm;
-                                font-size: 12px;
+                                font-family: 'Arial', sans-serif; /* Better readability */
+                                width: 58mm; /* Smaller width */
+                                min-height: 50mm; /* Smaller height */
+                                font-size: 12px; /* Increased base font */
                                 line-height: 1.2;
                             }
                             .ticket-header {
                                 text-align: center;
-                                margin-bottom: 5px;
+                                margin-bottom: 3px;
                             }
                             .ticket-logo img {
-                                max-width: 50px;
-                                max-height: 50px;
+                                max-width: 30px; /* Slightly larger logo */
+                                max-height: 30px;
                             }
                             .ticket-title {
-                                font-size: 12px;
+                                font-size: 10px; /* Larger title */
                                 font-weight: bold;
                                 line-height: 1.2;
-                                margin-bottom: 5px;
+                                margin-bottom: 3px;
                             }
                             h3 {
-                                font-size: 11px;
+                                font-size: 11px; /* Larger heading */
                                 margin: 3px 0;
                                 text-align: center;
                                 border-bottom: 1px dashed #000;
-                                padding-bottom: 5px;
+                                padding-bottom: 3px;
                             }
                             .ticket-number {
-                                font-size: 42px;
+                                font-size: 28px; /* Larger number for better visibility */
                                 font-weight: bold;
                                 text-align: center;
-                                margin: 15px 0;
+                                margin: 10px 0;
                                 color: #000;
                             }
                             .ticket-service {
-                                font-size: 18px;
+                                font-size: 12px; /* Larger service text */
                                 text-align: center;
-                                margin-bottom: 5px;
+                                margin-bottom: 4px;
                                 font-weight: bold;
                             }
                             .ticket-patient {
-                                font-size: 10px;
+                                font-size: 10px; /* Larger patient info */
                                 text-align: center;
-                                margin-bottom: 5px;
+                                margin-bottom: 3px;
+                                font-weight: bold; /* Make patient info more readable */
                             }
-                            .barcode-area {
-                                margin: 10px 0;
-                                text-align: center;
-                                border-top: 1px dashed #000;
-                                padding-top: 10px;
-                            }
-                            .barcode-placeholder {
-                                height: 40px;
-                                border: 1px solid #ccc;
-                                margin: 5px auto;
-                                width: 80%;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                font-size: 10px;
-                                color: #666;
-                            }
+                            /* REMOVED: Barcode area completely */
                             .ticket-footer {
-                                font-size: 9px;
+                                font-size: 8px; /* Slightly larger footer */
                                 text-align: center;
-                                margin-top: 10px;
+                                margin-top: 4px;
                                 border-top: 1px dashed #000;
-                                padding-top: 8px;
+                                padding-top: 4px;
                             }
                             hr {
                                 border: none;
                                 border-top: 1px dashed #000;
-                                margin: 5px 0;
+                                margin: 3px 0;
                             }
                         </style>
                     </head>
@@ -1856,9 +1839,6 @@
                         <div class="ticket-service">${service}</div>
                         <div class="ticket-patient">Patient: ${name}</div>
                         <div class="ticket-patient">Age: ${age} yrs | Gender: ${gender}</div>
-                        <div class="barcode-area">
-                            <div class="barcode-placeholder">BARCODE AREA</div>
-                        </div>
                         <div class="ticket-footer">
                             Please wait for your number to be called<br>
                             ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
